@@ -1285,7 +1285,7 @@ async def vnmadmin_delete_admin(admin_id: str, _sa: str = Depends(get_super_admi
 if __name__ == "__main__":
     print("=" * 60)
     print("  Vinamilk Night Club v3.2 - AI Cyberpunk Edition")
-    print("  http://localhost:8000")
-    print("  Super Admin: http://localhost:8000/vnmadmin")
+    print("  Super Admin: /vnmadmin")
     print("=" * 60)
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=False)
