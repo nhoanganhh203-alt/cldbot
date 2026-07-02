@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Hệ Thống Quản Lý CSDL Tập Trung — VNM Root</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg0:#020507;--bg1:#070b10;--bg2:#0a0f16;--bg3:#0e151e;
+  --gold:#ffd700;--gold2:#ffaa00;--red:#ff2244;--green:#00ff88;--cyan:#00d2ff;--purple:#9945ff;--orange:#ff6b00;
+  --t1:#f0f8ff;--t2:#8aa8c0;--t3:#4a6478;--t4:#2a3a48;
+  --gD:0 0 12px rgba(255,215,0,.4);
+  --fH:'Orbitron',monospace;--fM:'Share Tech Mono',monospace;--fU:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg0);color:var(--t1);font-family:var(--fU)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg1)}
+::-webkit-scrollbar-thumb{background:rgba(255,215,0,.2);border-radius:3px}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,215,0,.005) 2px,rgba(255,215,0,.005) 4px),
+  radial-gradient(ellipse at 15% 20%,rgba(153,69,255,.07) 0%,transparent 50%),
+  radial-gradient(ellipse at 85% 80%,rgba(255,215,0,.05) 0%,transparent 50%)}
+
+/* TOPBAR */
+.topbar{position:fixed;top:0;left:0;right:0;height:56px;z-index:100;
+  background:rgba(2,5,7,.96);border-bottom:1px solid rgba(255,215,0,.18);
+  backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.tb-brand{display:flex;align-items:center;gap:10px}
+.tb-title{font-family:var(--fH);font-size:11px;font-weight:900;letter-spacing:2px;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.tb-sub{font-family:var(--fM);font-size:7px;color:var(--t3);letter-spacing:2px;margin-top:2px}
+.tb-right{display:flex;align-items:center;gap:12px}
+.tb-user{font-family:var(--fM);font-size:10px;color:var(--gold);
+  background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);padding:4px 12px;border-radius:20px}
+.tb-clock{font-family:var(--fM);font-size:10px;color:var(--t3)}
+.btn-logout{font-family:var(--fH);font-size:8px;letter-spacing:1px;
+  background:rgba(255,34,68,.1);border:1px solid rgba(255,34,68,.3);
+  color:var(--red);padding:5px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.btn-logout:hover{background:rgba(255,34,68,.2)}
+
+/* SIDEBAR */
+.layout{display:flex;min-height:100vh;padding-top:56px}
+.sidebar{width:220px;background:rgba(2,5,7,.8);border-right:1px solid rgba(255,215,0,.1);
+  position:fixed;top:56px;left:0;bottom:0;padding:14px 0;overflow-y:auto;z-index:50}
+.sb-section{padding:8px 16px;font-family:var(--fM);font-size:7px;color:var(--t4);letter-spacing:2px;text-transform:uppercase;margin-top:8px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 18px;cursor:pointer;transition:.2s;
+  font-size:12px;color:var(--t2);border-left:2px solid transparent}
+.sb-item:hover{background:rgba(255,215,0,.05);color:var(--t1);border-left-color:rgba(255,215,0,.2)}
+.sb-item.active{background:rgba(255,215,0,.08);color:var(--gold);border-left-color:var(--gold)}
+.sb-icon{font-size:14px;width:18px;text-align:center}
+.sb-badge{margin-left:auto;font-family:var(--fM);font-size:8px;
+  background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.2);padding:2px 6px;border-radius:10px}
+.sb-badge.red{background:rgba(255,34,68,.1);color:var(--red);border-color:rgba(255,34,68,.2)}
+
+/* MAIN */
+.main{margin-left:220px;flex:1;padding:22px;position:relative;z-index:1}
+.page{display:none}
+.page.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap}
+.page-title{font-family:var(--fH);font-size:16px;font-weight:900;letter-spacing:2px;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.page-sub{font-family:var(--fM);font-size:8px;color:var(--t3);letter-spacing:1.5px;margin-top:4px}
+
+/* CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:rgba(14,21,30,.85);border:1px solid rgba(255,215,0,.1);border-radius:10px;
+  padding:14px 18px;position:relative;overflow:hidden;transition:.2s}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--gold),transparent)}
+.stat-card:hover{border-color:rgba(255,215,0,.22);transform:translateY(-2px)}
+.stat-val{font-family:var(--fH);font-size:26px;font-weight:900;color:var(--gold);line-height:1}
+.stat-lbl{font-family:var(--fM);font-size:8px;color:var(--t3);letter-spacing:1.5px;margin-top:6px}
+.stat-icon{position:absolute;right:12px;top:12px;font-size:20px;opacity:.3}
+
+.card{background:rgba(14,21,30,.85);border:1px solid rgba(255,215,0,.1);border-radius:10px;overflow:hidden;margin-bottom:18px}
+.card-hdr{padding:12px 18px;border-bottom:1px solid rgba(255,215,0,.07);display:flex;align-items:center;
+  justify-content:space-between;background:rgba(255,215,0,.02)}
+.card-title{font-family:var(--fH);font-size:9px;font-weight:700;letter-spacing:2px;color:var(--gold)}
+.card-body{padding:18px}
+
+/* FORM */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.s1{grid-template-columns:1fr}
+.form-row.s3{grid-template-columns:1fr 1fr 1fr}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-family:var(--fH);font-size:7px;letter-spacing:2px;color:var(--t2);text-transform:uppercase}
+.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid rgba(255,215,0,.12);border-radius:7px;
+  color:var(--t1);font-family:var(--fM);font-size:13px;padding:9px 12px;outline:none;transition:all .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);box-shadow:0 0 10px rgba(255,215,0,.12);background:var(--bg2)}
+.fg select option{background:var(--bg3)}
+.fg textarea{resize:vertical;min-height:70px}
+
+/* OTP CODE DISPLAY */
+.otp-display-box{background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.2);
+  border-radius:10px;padding:16px;text-align:center;margin-bottom:12px}
+.otp-display-code{font-family:var(--fH);font-size:28px;font-weight:900;letter-spacing:8px;
+  color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.4);
+  background:rgba(0,0,0,.35);padding:12px 18px;border-radius:7px;
+  display:inline-block;margin:10px 0;cursor:pointer;transition:.2s;user-select:all}
+.otp-display-code:hover{background:rgba(255,215,0,.1);text-shadow:0 0 30px rgba(255,215,0,.7)}
+.otp-copy-hint{font-family:var(--fM);font-size:8px;color:var(--t3);margin-top:4px}
+
+/* OTP INPUT GROUP */
+.otp-input-group{display:flex;gap:8px}
+.otp-input-group input{flex:1}
+.btn-random{font-family:var(--fM);font-size:10px;padding:9px 14px;border:1px solid rgba(255,215,0,.3);
+  background:rgba(255,215,0,.07);color:var(--gold);border-radius:7px;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn-random:hover{background:rgba(255,215,0,.15);border-color:rgba(255,215,0,.5)}
+
+/* PERMISSIONS */
+.perms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:7px;padding:4px 0}
+.perm-check{display:flex;align-items:center;gap:7px;cursor:pointer;
+  background:rgba(255,215,0,.03);border:1px solid rgba(255,215,0,.07);
+  border-radius:6px;padding:7px 10px;transition:.2s;font-size:11px;color:var(--t2)}
+.perm-check:hover{background:rgba(255,215,0,.08);color:var(--t1);border-color:rgba(255,215,0,.18)}
+.perm-check input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:pointer}
+
+/* BUTTONS */
+.btn{font-family:var(--fH);font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  padding:9px 18px;border:none;border-radius:7px;cursor:pointer;transition:all .2s;
+  display:inline-flex;align-items:center;gap:6px}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#040a00;box-shadow:var(--gD)}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(255,215,0,.4)}
+.btn-red{background:rgba(255,34,68,.1);border:1px solid rgba(255,34,68,.3);color:var(--red)}
+.btn-red:hover{background:rgba(255,34,68,.22);box-shadow:0 0 14px rgba(255,34,68,.25)}
+.btn-green{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);color:var(--green)}
+.btn-green:hover{background:rgba(0,255,136,.18);box-shadow:0 0 14px rgba(0,255,136,.25)}
+.btn-purple{background:rgba(153,69,255,.1);border:1px solid rgba(153,69,255,.3);color:#cc88ff}
+.btn-purple:hover{background:rgba(153,69,255,.22)}
+.btn-cyan{background:rgba(0,210,255,.1);border:1px solid rgba(0,210,255,.3);color:var(--cyan)}
+.btn-cyan:hover{background:rgba(0,210,255,.18)}
+.btn-sm{padding:5px 12px;font-size:7px}
+.btn-full{width:100%;justify-content:center}
+.btn:active{transform:scale(.97)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead tr{background:rgba(255,215,0,.04);border-bottom:1px solid rgba(255,215,0,.12)}
+thead th{padding:9px 12px;text-align:left;font-family:var(--fH);font-size:7px;letter-spacing:2px;color:var(--gold);font-weight:700}
+tbody tr{border-bottom:1px solid rgba(255,215,0,.03);transition:.15s}
+tbody tr:hover{background:rgba(255,215,0,.03)}
+tbody td{padding:9px 12px;color:var(--t2);font-family:var(--fM)}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:8px;font-family:var(--fH);letter-spacing:1px;font-weight:700}
+.badge-active{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.badge-locked{background:rgba(255,34,68,.1);color:var(--red);border:1px solid rgba(255,34,68,.2)}
+.badge-used{background:rgba(255,107,0,.1);color:var(--orange);border:1px solid rgba(255,107,0,.2)}
+.badge-valid{background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.2)}
+.badge-super{background:rgba(153,69,255,.15);color:#cc88ff;border:1px solid rgba(153,69,255,.3)}
+.badge-admin{background:rgba(0,210,255,.1);color:var(--cyan);border:1px solid rgba(0,210,255,.2)}
+.badge-exp{background:rgba(74,100,120,.15);color:var(--t3);border:1px solid rgba(74,100,120,.2)}
+
+/* ALERT */
+.alert{border-radius:7px;padding:10px 14px;font-family:var(--fM);font-size:10px;margin-bottom:14px;display:none}
+.alert.success{background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.25);color:var(--green)}
+.alert.error{background:rgba(255,34,68,.07);border:1px solid rgba(255,34,68,.25);color:var(--red)}
+.alert.warn{background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.2);color:var(--gold)}
+.alert.show{display:block;animation:fds .3s ease}
+@keyframes fds{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+
+/* LOG */
+.log-feed{background:rgba(2,5,7,.8);border:1px solid rgba(255,215,0,.06);border-radius:7px;
+  padding:10px;max-height:280px;overflow-y:auto;font-family:var(--fM);font-size:10px}
+.log-line{padding:2px 0;border-bottom:1px solid rgba(255,215,0,.03);color:var(--t3);line-height:1.5}
+.log-line.ok{color:var(--green)}
+.log-line.err{color:var(--red)}
+.log-line.warn{color:var(--gold)}
+.log-line.info{color:var(--cyan)}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{width:50px}
+  .sb-item span:not(.sb-icon){display:none}
+  .sb-section,.sb-badge{display:none}
+  .main{margin-left:50px;padding:12px}
+  .form-row,.form-row.s3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-brand">
+    <span style="font-size:20px">👑</span>
+    <div>
+      <div class="tb-title">HỆ THỐNG QUẢN LÝ CSDL TẬP TRUNG</div>
+      <div class="tb-sub">VINAMILK ROOT ADMIN — TOÀN QUYỀN KIỂM SOÁT</div>
+    </div>
+  </div>
+  <div class="tb-right">
+    <div class="tb-clock" id="topClock">--:--:--</div>
+    <div class="tb-user">👑 vinamilk</div>
+    <button class="btn-logout" onclick="doLogout()">⏏ Đăng Xuất</button>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sb-section">TỔNG QUAN</div>
+    <div class="sb-item active" onclick="showPage('dashboard',this)"><span class="sb-icon">📊</span><span>Bảng Điều Khiển</span></div>
+
+    <div class="sb-section">QUẢN LÝ MÃ TRUY CẬP</div>
+    <div class="sb-item" onclick="showPage('otp',this)"><span class="sb-icon">🔑</span><span>Tạo Mã Truy Cập</span></div>
+    <div class="sb-item" onclick="showPage('otp-history',this)"><span class="sb-icon">📋</span><span>Lịch Sử Mã</span><span class="sb-badge" id="otpBadge">0</span></div>
+
+    <div class="sb-section">QUẢN LÝ TÀI KHOẢN</div>
+    <div class="sb-item" onclick="showPage('create-admin',this)"><span class="sb-icon">➕</span><span>Tạo Admin Mới</span></div>
+    <div class="sb-item" onclick="showPage('manage-admins',this)"><span class="sb-icon">👥</span><span>Danh Sách Admin</span></div>
+
+    <div class="sb-section">PHÂN QUYỀN</div>
+    <div class="sb-item" onclick="showPage('permissions',this)"><span class="sb-icon">🛡️</span><span>Phân Quyền</span></div>
+
+    <div class="sb-section">HỆ THỐNG</div>
+    <div class="sb-item" onclick="showPage('activity-log',this)"><span class="sb-icon">📜</span><span>Nhật Ký HĐ</span></div>
+    <div class="sb-item" onclick="showPage('settings',this)"><span class="sb-icon">⚙️</span><span>Cài Đặt</span></div>
+  </nav>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-hdr">
+        <div><div class="page-title">📊 BẢNG ĐIỀU KHIỂN</div><div class="page-sub">TỔNG QUAN HỆ THỐNG QUẢN LÝ CSDL TẬP TRUNG</div></div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val" id="s1">0</div><div class="stat-lbl">Tổng Admin</div><div class="stat-icon">👥</div></div>
+        <div class="stat-card"><div class="stat-val" id="s2">0</div><div class="stat-lbl">Admin Đang Hoạt Động</div><div class="stat-icon">✅</div></div>
+        <div class="stat-card"><div class="stat-val" id="s3">0</div><div class="stat-lbl">Admin Bị Khóa</div><div class="stat-icon">🔒</div></div>
+        <div class="stat-card"><div class="stat-val" id="s4">0</div><div class="stat-lbl">Mã Đã Tạo</div><div class="stat-icon">🔑</div></div>
+        <div class="stat-card"><div class="stat-val" id="s5">0</div><div class="stat-lbl">Mã Còn Hiệu Lực</div><div class="stat-icon">⏳</div></div>
+        <div class="stat-card"><div class="stat-val" id="s6">0</div><div class="stat-lbl">Mã Đã Dùng</div><div class="stat-icon">✔️</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">📜 NHẬT KÝ GẦN NHẤT</div>
+          <button class="btn btn-sm" style="background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.18);color:var(--gold)" onclick="refreshDashLog()">🔄</button>
+        </div>
+        <div class="card-body"><div class="log-feed" id="dashLog"><div class="log-line info">[ SYS ] He thong quan ly CSDL tap trung da san sang.</div></div></div>
+      </div>
+    </div>
+
+    <!-- TẠO MÃ TRUY CẬP -->
+    <div class="page" id="page-otp">
+      <div class="page-hdr">
+        <div><div class="page-title">🔑 TẠO MÃ TRUY CẬP 1 LẦN</div><div class="page-sub">MÃ CHỈ DÙNG ĐƯỢC DUY NHẤT 1 LẦN — TỰ ĐỘNG VÔ HIỆU SAU KHI SỬ DỤNG</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">⚙️ CẤU HÌNH MÃ TRUY CẬP</div></div>
+        <div class="card-body">
+          <div id="otpCreateAlert" class="alert"></div>
+
+          <!-- LOẠI MÃ -->
+          <div style="margin-bottom:14px">
+            <label class="fg" style="margin-bottom:8px"><span style="font-family:var(--fH);font-size:7px;letter-spacing:2px;color:var(--t2);text-transform:uppercase">Loại Mã</span></label>
+            <div style="display:flex;gap:8px">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:var(--fM);font-size:12px;color:var(--t2)">
+                <input type="radio" name="otpType" value="custom" id="rCustom" checked style="accent-color:var(--gold)"> Mã tự đặt (bất kỳ)
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:var(--fM);font-size:12px;color:var(--t2)">
+                <input type="radio" name="otpType" value="random" id="rRandom" style="accent-color:var(--gold)"> Mã ngẫu nhiên
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="fg">
+              <label>Mã Truy Cập</label>
+              <div class="otp-input-group">
+                <input type="text" id="otpCodeInput" placeholder="VD: dangnhap hoặc admin2026..." autocomplete="off" spellcheck="false"/>
+                <button type="button" class="btn-random" onclick="genRandomCode()" title="Tạo mã ngẫu nhiên">🎲 Random</button>
+              </div>
+              <div style="font-family:var(--fM);font-size:8px;color:var(--t3);margin-top:4px">Gõ mã tùy ý hoặc nhấn 🎲 để tạo ngẫu nhiên</div>
+            </div>
+            <div class="fg">
+              <label>Ghi Chú / Mô Tả</label>
+              <input type="text" id="otpNote" placeholder="VD: Cấp cho nhân viên A, dùng 1 lần..."/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="fg">
+              <label>Thời Hạn Hiệu Lực</label>
+              <select id="otpExpiry">
+                <option value="3600">1 Giờ</option>
+                <option value="86400" selected>24 Giờ</option>
+                <option value="259200">3 Ngày</option>
+                <option value="604800">7 Ngày</option>
+                <option value="0">Không Giới Hạn</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Mục Đích Sử Dụng</label>
+              <select id="otpPurpose">
+                <option value="login">Đăng nhập 1 lần</option>
+                <option value="reset">Reset / khôi phục tài khoản</option>
+                <option value="register">Đăng ký admin mới</option>
+                <option value="access">Truy cập tạm thời</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-gold btn-full" onclick="createOTP()">⚡ TẠO MÃ TRUY CẬP</button>
+        </div>
+      </div>
+
+      <div class="card" id="otpResultCard" style="display:none">
+        <div class="card-hdr"><div class="card-title">✅ MÃ TRUY CẬP ĐÃ ĐƯỢC TẠO THÀNH CÔNG</div></div>
+        <div class="card-body" id="otpResults"></div>
+      </div>
+    </div>
+
+    <!-- LỊCH SỬ MÃ -->
+    <div class="page" id="page-otp-history">
+      <div class="page-hdr">
+        <div><div class="page-title">📋 LỊCH SỬ MÃ TRUY CẬP</div><div class="page-sub">THEO DÕI TRẠNG THÁI TẤT CẢ MÃ ĐÃ CẤP PHÁT</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-red" onclick="clearExpiredOTPs()">🗑 Xoá Hết Hạn/Đã Dùng</button>
+          <button class="btn btn-sm btn-gold" onclick="loadOTPHistory()">🔄 Làm Mới</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div id="otpHistAlert" class="alert"></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Mã Truy Cập</th><th>Mục Đích</th><th>Ghi Chú</th><th>Trạng Thái</th><th>Tạo Lúc</th><th>Hết Hạn</th><th>Thao Tác</th></tr></thead>
+              <tbody id="otpHistBody"><tr><td colspan="8" style="text-align:center;color:var(--t3);padding:20px">Đang tải...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TẠO ADMIN -->
+    <div class="page" id="page-create-admin">
+      <div class="page-hdr">
+        <div><div class="page-title">➕ TẠO TÀI KHOẢN ADMIN MỚI</div><div class="page-sub">THÊM ADMINISTRATOR VÀO HỆ THỐNG VNMSCAN</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">📝 THÔNG TIN TÀI KHOẢN</div></div>
+        <div class="card-body">
+          <div id="createAdminAlert" class="alert"></div>
+          <div class="form-row">
+            <div class="fg"><label>Tên Đăng Nhập</label><input type="text" id="newUser" placeholder="admin_username" autocomplete="off"/></div>
+            <div class="fg"><label>Mật Khẩu</label><input type="password" id="newPass" placeholder="Tối thiểu 6 ký tự" autocomplete="off"/></div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>Họ Tên Đầy Đủ</label><input type="text" id="newDisplayName" placeholder="Nguyễn Văn A"/></div>
+            <div class="fg"><label>Email</label><input type="email" id="newEmail" placeholder="admin@company.com"/></div>
+          </div>
+          <div class="form-row">
+            <div class="fg">
+              <label>Vai Trò</label>
+              <select id="newRole">
+                <option value="viewer">👀 Viewer — Chỉ xem</option>
+                <option value="analyst">🔬 Analyst — Phân tích</option>
+                <option value="operator" selected>⚙️ Operator — Vận hành</option>
+                <option value="admin">🛡️ Admin — Quản trị đầy đủ</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Trạng Thái Ban Đầu</label>
+              <select id="newStatus">
+                <option value="active">✅ Kích hoạt ngay</option>
+                <option value="locked">🔒 Tạo nhưng khóa</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg" style="margin-bottom:14px">
+            <label>Phân Quyền Chi Tiết</label>
+            <div class="perms-grid" id="newPermGrid">
+              <label class="perm-check"><input type="checkbox" value="scan" checked> 🔍 Quét Domain</label>
+              <label class="perm-check"><input type="checkbox" value="upload" checked> 📤 Upload File</label>
+              <label class="perm-check"><input type="checkbox" value="download" checked> 📥 Tải Kết Quả</label>
+              <label class="perm-check"><input type="checkbox" value="analyze"> 🤖 Phân Tích AI</label>
+              <label class="perm-check"><input type="checkbox" value="dns"> 🌐 Kiểm Tra DNS</label>
+              <label class="perm-check"><input type="checkbox" value="stop"> 🛑 Dừng Scan</label>
+              <label class="perm-check"><input type="checkbox" value="export_json"> 📊 Xuất JSON</label>
+              <label class="perm-check"><input type="checkbox" value="export_csv"> 📊 Xuất CSV</label>
+              <label class="perm-check"><input type="checkbox" value="history"> 📋 Xem Lịch Sử</label>
+              <label class="perm-check"><input type="checkbox" value="settings"> ⚙️ Cài Đặt</label>
+            </div>
+          </div>
+          <div class="fg" style="margin-bottom:14px">
+            <label>Ghi Chú</label>
+            <textarea id="newNotes" placeholder="Ghi chú về tài khoản này..."></textarea>
+          </div>
+          <button class="btn btn-gold btn-full" onclick="createAdmin()">👤 TẠO TÀI KHOẢN ADMIN</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DANH SÁCH ADMIN -->
+    <div class="page" id="page-manage-admins">
+      <div class="page-hdr">
+        <div><div class="page-title">👥 DANH SÁCH ADMIN</div><div class="page-sub">QUẢN LÝ TẤT CẢ TÀI KHOẢN ADMINISTRATOR</div></div>
+        <button class="btn btn-sm btn-gold" onclick="renderAdminList()">🔄 Làm Mới</button>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div id="manageAdminAlert" class="alert"></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Username</th><th>Họ Tên</th><th>Vai Trò</th><th>Trạng Thái</th><th>Quyền</th><th>Tạo Lúc</th><th>Thao Tác</th></tr></thead>
+              <tbody id="adminListBody"><tr><td colspan="8" style="text-align:center;color:var(--t3);padding:18px">Chưa có admin nào</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHÂN QUYỀN -->
+    <div class="page" id="page-permissions">
+      <div class="page-hdr">
+        <div><div class="page-title">🛡️ PHÂN QUYỀN HỆ THỐNG</div><div class="page-sub">CHỈNH SỬA QUYỀN TRUY CẬP TỪNG ADMIN</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">🎯 CHỌN TÀI KHOẢN</div></div>
+        <div class="card-body">
+          <div class="form-row s1"><div class="fg"><label>Chọn Admin</label>
+            <select id="permAdminSelect" onchange="loadAdminPerms()"><option value="">-- Chọn tài khoản --</option></select>
+          </div></div>
+          <div id="permEditor" style="display:none">
+            <div class="fg" style="margin-bottom:14px">
+              <label>Quyền Truy Cập</label>
+              <div class="perms-grid" id="permEditorGrid">
+                <label class="perm-check"><input type="checkbox" value="scan"> 🔍 Quét Domain</label>
+                <label class="perm-check"><input type="checkbox" value="upload"> 📤 Upload File</label>
+                <label class="perm-check"><input type="checkbox" value="download"> 📥 Tải Kết Quả</label>
+                <label class="perm-check"><input type="checkbox" value="analyze"> 🤖 Phân Tích AI</label>
+                <label class="perm-check"><input type="checkbox" value="dns"> 🌐 Kiểm Tra DNS</label>
+                <label class="perm-check"><input type="checkbox" value="stop"> 🛑 Dừng Scan</label>
+                <label class="perm-check"><input type="checkbox" value="export_json"> 📊 Xuất JSON</label>
+                <label class="perm-check"><input type="checkbox" value="export_csv"> 📊 Xuất CSV</label>
+                <label class="perm-check"><input type="checkbox" value="history"> 📋 Xem Lịch Sử</label>
+                <label class="perm-check"><input type="checkbox" value="settings"> ⚙️ Cài Đặt</label>
+              </div>
+            </div>
+            <div id="permAlert" class="alert"></div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-gold" onclick="savePerms()">💾 Lưu Phân Quyền</button>
+              <button class="btn btn-green" onclick="selectAllPerms()">☑ Chọn Tất Cả</button>
+              <button class="btn btn-red btn-sm" onclick="clearAllPerms()">☐ Bỏ Tất Cả</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NHẬT KÝ -->
+    <div class="page" id="page-activity-log">
+      <div class="page-hdr">
+        <div><div class="page-title">📜 NHẬT KÝ HOẠT ĐỘNG</div><div class="page-sub">LỊCH SỬ TOÀN BỘ HOẠT ĐỘNG HỆ THỐNG QUẢN TRỊ</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm btn-red" onclick="clearLogs()">🗑 Xoá</button>
+          <button class="btn btn-sm btn-gold" onclick="renderLogs()">🔄 Làm Mới</button>
+        </div>
+      </div>
+      <div class="card"><div class="card-body">
+        <div class="log-feed" id="activityLogFeed" style="max-height:500px"></div>
+      </div></div>
+    </div>
+
+    <!-- CÀI ĐẶT -->
+    <div class="page" id="page-settings">
+      <div class="page-hdr">
+        <div><div class="page-title">⚙️ CÀI ĐẶT HỆ THỐNG</div><div class="page-sub">CẤU HÌNH VÀ THAM SỐ QUẢN TRỊ CẤP CAO</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">🔐 ĐỔI MẬT KHẨU SUPER ADMIN</div></div>
+        <div class="card-body">
+          <div id="settingsAlert" class="alert"></div>
+          <div class="form-row">
+            <div class="fg"><label>Mật Khẩu Hiện Tại</label><input type="password" id="oldPass" placeholder="••••••••"/></div>
+            <div class="fg"><label>Mật Khẩu Mới</label><input type="password" id="newSuperPass" placeholder="Tối thiểu 6 ký tự"/></div>
+          </div>
+          <button class="btn btn-gold" onclick="changePassword()">🔒 Cập Nhật Mật Khẩu</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">📊 THÔNG TIN HỆ THỐNG</div></div>
+        <div class="card-body">
+          <table><tbody>
+            <tr><td style="color:var(--t3);padding:7px 0;font-family:var(--fM)">Phiên Bản</td><td style="color:var(--gold);font-family:var(--fH);font-size:10px">CSDL Admin v2.0</td></tr>
+            <tr><td style="color:var(--t3);padding:7px 0;font-family:var(--fM)">Tài Khoản Tối Cao</td><td style="color:var(--gold);font-family:var(--fH);font-size:10px">vinamilk (ROOT)</td></tr>
+            <tr><td style="color:var(--t3);padding:7px 0;font-family:var(--fM)">Domain Quản Trị</td><td style="color:var(--cyan);font-family:var(--fM)">/vnmadmin</td></tr>
+            <tr><td style="color:var(--t3);padding:7px 0;font-family:var(--fM)">Domain Hệ Thống Chính</td><td style="color:var(--cyan);font-family:var(--fM)">/login</td></tr>
+            <tr><td style="color:var(--t3);padding:7px 0;font-family:var(--fM)">Thời Gian Server</td><td id="serverTime" style="color:var(--green);font-family:var(--fM)">--</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── STATE (đã đồng bộ hoàn toàn với server-side thông qua API)
+let adminList = [];
+let actLogs   = JSON.parse(localStorage.getItem('vnm_logs')||'[]');
+
+async function loadAdmins(){
+  try {
+    const r = await fetch('/api/vnmadmin/admins', {credentials:'include'});
+    const d = await r.json();
+    if(d.status === 'ok') {
+      adminList = d.admins;
+    }
+  } catch(e) {
+    console.error('Lỗi tải danh sách admin từ server:', e);
+  }
+}
+
+// ── CLOCK
+function tickClock(){
+  const now=new Date();
+  document.getElementById('topClock').textContent=now.toLocaleTimeString('vi-VN',{hour12:false});
+  const el=document.getElementById('serverTime');
+  if(el) el.textContent=now.toLocaleString('vi-VN');
+}
+setInterval(tickClock,1000); tickClock();
+
+// ── NAVIGATE
+async function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);
+  if(pg) pg.classList.add('active');
+  if(el) el.classList.add('active');
+  
+  if (['manage-admins', 'permissions', 'dashboard', 'create-admin'].includes(id)) {
+    await loadAdmins();
+  }
+  
+  if(id==='manage-admins') renderAdminList();
+  if(id==='otp-history')   loadOTPHistory();
+  if(id==='activity-log')  renderLogs();
+  if(id==='permissions')   populatePermSelect();
+  updateStats();
+}
+
+// ── LOG
+function addLog(msg,type='info'){
+  const ts=new Date().toLocaleString('vi-VN');
+  actLogs.unshift({ts,msg,type});
+  if(actLogs.length>300) actLogs.pop();
+  localStorage.setItem('vnm_logs',JSON.stringify(actLogs));
+  const df=document.getElementById('dashLog');
+  if(df){const d=document.createElement('div');d.className='log-line '+type;
+    d.textContent='['+ts+'] '+msg;df.prepend(d);
+    if(df.children.length>30) df.lastChild.remove();}
+}
+function renderLogs(){
+  const f=document.getElementById('activityLogFeed');
+  if(!f) return;
+  f.innerHTML=actLogs.length?actLogs.map(l=>'<div class="log-line '+l.type+'">['+l.ts+'] '+l.msg+'</div>').join(''):'<div class="log-line">Chua co hoat dong nao.</div>';
+}
+function clearLogs(){
+  if(!confirm('Xoa toan bo nhat ky?')) return;
+  actLogs=[];localStorage.removeItem('vnm_logs');renderLogs();
+}
+function refreshDashLog(){
+  const df=document.getElementById('dashLog');
+  if(!df) return;
+  df.innerHTML=actLogs.slice(0,30).map(l=>'<div class="log-line '+l.type+'">['+l.ts+'] '+l.msg+'</div>').join('')||'<div class="log-line info">[ SYS ] He thong san sang.</div>';
+}
+
+// ── STATS (OTP từ API)
+async function updateStats(){
+  const total=adminList.length,active=adminList.filter(a=>a.status==='active').length;
+  document.getElementById('s1').textContent=total;
+  document.getElementById('s2').textContent=active;
+  document.getElementById('s3').textContent=total-active;
+  // OTP stats qua API
+  try{
+    const r=await fetch('/api/vnmadmin/otp/list',{credentials:'include'});
+    const d=await r.json();
+    if(d.status==='ok'){
+      const now=Date.now();
+      const valid=d.otps.filter(o=>!o.used&&(o.expiry===0||o.expiry>now)).length;
+      const used=d.otps.filter(o=>o.used).length;
+      document.getElementById('s4').textContent=d.otps.length;
+      document.getElementById('s5').textContent=valid;
+      document.getElementById('s6').textContent=used;
+      const badge=document.getElementById('otpBadge');
+      if(badge){badge.textContent=valid;badge.className=valid>0?'sb-badge':'sb-badge red';}
+    }
+  }catch(e){}
+}
+
+// ── RANDOM CODE GENERATOR
+function genRandomCode(){
+  const sets=['ABCDEFGHJKLMNPQRSTUVWXYZ','23456789'];
+  const all=sets.join('');
+  const styles=[
+    ()=>Array.from({length:8},()=>all[Math.floor(Math.random()*all.length)]).join('').slice(0,4)+'-'+Array.from({length:4},()=>all[Math.floor(Math.random()*all.length)]).join(''),
+    ()=>Array.from({length:6},()=>all[Math.floor(Math.random()*all.length)]).join(''),
+    ()=>Array.from({length:10},()=>all[Math.floor(Math.random()*all.length)]).join(''),
+    ()=>{const words=['admin','secure','access','login','vnmscan','portal'];return words[Math.floor(Math.random()*words.length)]+(Math.floor(Math.random()*900)+100);}
+  ];
+  const code=styles[Math.floor(Math.random()*styles.length)]();
+  document.getElementById('otpCodeInput').value=code;
+}
+
+// ── CREATE OTP (gọi API server)
+async function createOTP(){
+  const al=document.getElementById('otpCreateAlert');
+  const code=document.getElementById('otpCodeInput').value.trim();
+  const note=document.getElementById('otpNote').value.trim();
+  const expSec=parseInt(document.getElementById('otpExpiry').value);
+  const purpose=document.getElementById('otpPurpose').value;
+
+  if(!code){showAlert(al,'error','❌ Vui lòng nhập hoặc tạo mã truy cập!');return;}
+  if(code.length<3){showAlert(al,'error','❌ Mã quá ngắn, tối thiểu 3 ký tự!');return;}
+
+  try{
+    const r=await fetch('/api/vnmadmin/otp/create',{
+      method:'POST',credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({code,note,expiry:expSec,purpose})
+    });
+    const d=await r.json();
+    if(!r.ok||d.status!=='ok') throw new Error(d.message||'Loi tao ma');
+
+    const otp=d.otp;
+    addLog('Tao ma truy cap: "'+code+'" | '+purpose+(note?' | '+note:''),'ok');
+    showAlert(al,'success','✅ Đã tạo mã "'+code+'" thành công!');
+
+    // Hiển thị kết quả
+    const rc=document.getElementById('otpResultCard');
+    const rr=document.getElementById('otpResults');
+    rc.style.display='block';
+    const exp=otp.expiry===0?'Không giới hạn':'Hết hạn: '+new Date(otp.expiry).toLocaleString('vi-VN');
+    const pLabels={login:'Đăng nhập 1 lần',reset:'Reset tài khoản',register:'Đăng ký admin',access:'Truy cập tạm thời',other:'Khác'};
+    rr.innerHTML=`
+      <div class="otp-display-box">
+        <div style="font-family:var(--fM);font-size:8px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">${pLabels[otp.purpose]||otp.purpose}</div>
+        <div class="otp-display-code" onclick="copyCode('${otp.code}',this)" title="Click để sao chép">${otp.code}</div>
+        <div class="otp-copy-hint">👆 Click vào mã để sao chép — paste trực tiếp vào trang đăng nhập</div>
+        ${otp.note?'<div style="font-family:var(--fM);font-size:9px;color:var(--t3);margin-top:6px">📝 '+otp.note+'</div>':''}
+        <div style="font-family:var(--fM);font-size:9px;color:var(--green);margin-top:8px">✅ Đang hiệu lực — ${exp}</div>
+      </div>`;
+    updateStats();
+    document.getElementById('otpCodeInput').value='';
+  }catch(ex){showAlert(al,'error','❌ '+ex.message);}
+}
+
+function copyCode(code,el){
+  navigator.clipboard.writeText(code).then(()=>{
+    const orig=el.textContent;
+    el.style.color='var(--green)';el.textContent='✅ ĐÃ SAO CHÉP!';
+    setTimeout(()=>{el.style.color='var(--gold)';el.textContent=orig;},1600);
+  });
+}
+
+// ── OTP HISTORY (từ API)
+async function loadOTPHistory(){
+  const tbody=document.getElementById('otpHistBody');
+  const al=document.getElementById('otpHistAlert');
+  tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:16px">Đang tải...</td></tr>';
+  try{
+    const r=await fetch('/api/vnmadmin/otp/list',{credentials:'include'});
+    const d=await r.json();
+    if(!r.ok||d.status!=='ok') throw new Error(d.message||'Loi tai danh sach');
+    const now=Date.now();
+    if(!d.otps.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:18px">Chưa có mã nào được tạo</td></tr>';return;}
+    const pL={login:'Đăng nhập',reset:'Reset',register:'Đăng ký',access:'Truy cập',other:'Khác'};
+    tbody.innerHTML=d.otps.map((o,i)=>{
+      const exp=o.expiry!==0&&o.expiry<now;
+      const sb=o.used?'<span class="badge badge-used">ĐÃ DÙNG</span>':exp?'<span class="badge badge-exp">HẾT HẠN</span>':'<span class="badge badge-valid">CÒN HẠN</span>';
+      const ed=o.expiry===0?'Không giới hạn':new Date(o.expiry).toLocaleString('vi-VN');
+      const act=!o.used&&!exp?`<button class="btn btn-sm btn-red" onclick="revokeOTP('${o.id}')">🗑 Thu Hồi</button>`:'—';
+      return `<tr><td>${i+1}</td><td><span style="font-family:var(--fH);color:var(--gold);font-size:11px">${o.code}</span></td>
+        <td>${pL[o.purpose]||o.purpose}</td>
+        <td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.note||'—'}</td>
+        <td>${sb}</td><td>${new Date(o.created).toLocaleString('vi-VN')}</td><td>${ed}</td><td>${act}</td></tr>`;
+    }).join('');
+  }catch(ex){showAlert(al,'error','❌ '+ex.message);}
+}
+
+async function revokeOTP(id){
+  const al=document.getElementById('otpHistAlert');
+  try{
+    const r=await fetch('/api/vnmadmin/otp/'+id,{method:'DELETE',credentials:'include'});
+    const d=await r.json();
+    addLog('Thu hoi ma OTP: '+id,'warn');
+    showAlert(al,'success','✅ Đã thu hồi mã');
+    loadOTPHistory(); updateStats();
+  }catch(ex){showAlert(al,'error','❌ '+ex.message);}
+}
+
+async function clearExpiredOTPs(){
+  const al=document.getElementById('otpHistAlert');
+  try{
+    const r=await fetch('/api/vnmadmin/otp',{method:'DELETE',credentials:'include'});
+    const d=await r.json();
+    addLog('Xoa '+Math.max(0,0)+' OTP het han/da dung','warn');
+    showAlert(al,'success','✅ Đã xoá các mã hết hạn và đã dùng. Còn: '+d.remaining);
+    loadOTPHistory(); updateStats();
+  }catch(ex){showAlert(al,'error','❌ '+ex.message);}
+}
+
+// ── ADMIN LIST (localStorage)
+function renderAdminList(){
+  const tb=document.getElementById('adminListBody');
+  if(!adminList.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:18px">Chưa có admin nào</td></tr>';return;}
+  const rb={viewer:'<span class="badge" style="background:rgba(74,100,120,.15);color:var(--t2);border:1px solid var(--t4)">VIEWER</span>',
+    analyst:'<span class="badge badge-admin">ANALYST</span>',
+    operator:'<span class="badge badge-admin">OPERATOR</span>',
+    admin:'<span class="badge badge-super">ADMIN</span>'};
+  tb.innerHTML=adminList.map((a,i)=>`<tr>
+    <td>${i+1}</td>
+    <td style="font-family:var(--fH);font-size:10px;color:var(--t1)">${a.username}</td>
+    <td>${a.displayName||'—'}</td>
+    <td>${rb[a.role]||a.role}</td>
+    <td>${a.status==='active'?'<span class="badge badge-active">ACTIVE</span>':'<span class="badge badge-locked">LOCKED</span>'}</td>
+    <td style="font-size:10px">${(a.permissions||[]).length} quyền</td>
+    <td>${a.created ? new Date(a.created).toLocaleString('vi-VN') : '—'}</td>
+    <td style="display:flex;gap:5px;flex-wrap:wrap">
+      ${a.status==='active'?`<button class="btn btn-sm btn-red" onclick="toggleAdmin('${a.id}','locked')">🔒</button>`:`<button class="btn btn-sm btn-green" onclick="toggleAdmin('${a.id}','active')">🔓</button>`}
+      <button class="btn btn-sm btn-purple" onclick="quickPerm('${a.id}')">🛡️</button>
+      <button class="btn btn-sm btn-red" onclick="deleteAdmin('${a.id}','${a.username}')">🗑</button>
+    </td></tr>`).join('');
+}
+
+async function createAdmin(){
+  const al=document.getElementById('createAdminAlert');
+  const u=document.getElementById('newUser').value.trim();
+  const p=document.getElementById('newPass').value;
+  if(!u||!p){showAlert(al,'error','❌ Username và mật khẩu không được để trống!');return;}
+  if(p.length<6){showAlert(al,'error','❌ Mật khẩu tối thiểu 6 ký tự!');return;}
+  
+  const perms=[...document.querySelectorAll('#newPermGrid input:checked')].map(c=>c.value);
+  const dispName = document.getElementById('newDisplayName').value.trim() || u;
+  const email = document.getElementById('newEmail').value.trim();
+  const role = document.getElementById('newRole').value;
+  const statusVal = document.getElementById('newStatus').value;
+  const notes = document.getElementById('newNotes').value.trim();
+
+  try {
+    const r = await fetch('/api/vnmadmin/admins', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        username: u,
+        password: p,
+        displayName: dispName,
+        email: email,
+        role: role,
+        status: statusVal,
+        permissions: perms,
+        notes: notes
+      })
+    });
+    const d = await r.json();
+    if(r.ok && d.status === 'ok') {
+      addLog('Tao admin: '+u+' | '+role,'ok');
+      showAlert(al,'success','✅ Đã tạo tài khoản "'+u+'" thành công!');
+      ['newUser','newPass','newDisplayName','newEmail','newNotes'].forEach(id=>document.getElementById(id).value='');
+      await loadAdmins();
+      updateStats();
+    } else {
+      throw new Error(d.message || 'Lỗi không xác định');
+    }
+  } catch(ex) {
+    showAlert(al,'error','❌ ' + ex.message);
+  }
+}
+
+async function toggleAdmin(id,ns){
+  const a=adminList.find(x=>x.id===id);if(!a)return;
+  try {
+    const r = await fetch(`/api/vnmadmin/admins/${id}/status`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ status: ns })
+    });
+    const d = await r.json();
+    if(r.ok && d.status === 'ok') {
+      addLog((ns==='locked'?'Khóa':'Mở khóa')+' admin: '+a.username,ns==='locked'?'warn':'ok');
+      await loadAdmins();
+      renderAdminList();
+      updateStats();
+      showAlert(document.getElementById('manageAdminAlert'),'success','✅ Đã '+(ns==='locked'?'khóa':'mở khóa')+' "'+a.username+'"');
+    } else {
+      throw new Error(d.message || 'Lỗi cập nhật trạng thái');
+    }
+  } catch(ex) {
+    showAlert(document.getElementById('manageAdminAlert'),'error','❌ ' + ex.message);
+  }
+}
+
+function quickPerm(id){
+  showPage('permissions',document.querySelector('.sb-item[onclick*="permissions"]'));
+  setTimeout(()=>{const sel=document.getElementById('permAdminSelect');if(sel){sel.value=id;loadAdminPerms();}},100);
+}
+
+async function deleteAdmin(id,name){
+  if(!confirm('Xóa tài khoản "'+name+'"? Không thể hoàn tác!')) return;
+  try {
+    const r = await fetch(`/api/vnmadmin/admins/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    const d = await r.json();
+    if(r.ok && d.status === 'ok') {
+      addLog('Xoa admin: '+name,'warn');
+      await loadAdmins();
+      renderAdminList();
+      updateStats();
+      populatePermSelect();
+      showAlert(document.getElementById('manageAdminAlert'),'warn','⚠️ Đã xóa "'+name+'"');
+    } else {
+      throw new Error(d.message || 'Lỗi xóa tài khoản');
+    }
+  } catch(ex) {
+    showAlert(document.getElementById('manageAdminAlert'),'error','❌ ' + ex.message);
+  }
+}
+
+// ── PERMISSIONS
+function populatePermSelect(){
+  const sel=document.getElementById('permAdminSelect');if(!sel)return;
+  sel.innerHTML='<option value="">-- Chọn tài khoản --</option>'+adminList.map(a=>`<option value="${a.id}">${a.username} (${a.role})</option>`).join('');
+  document.getElementById('permEditor').style.display='none';
+}
+function loadAdminPerms(){
+  const id=document.getElementById('permAdminSelect').value;
+  const ed=document.getElementById('permEditor');
+  if(!id){ed.style.display='none';return;}
+  const a=adminList.find(x=>x.id===id);
+  if(!a){ed.style.display='none';return;}
+  ed.style.display='block';
+  const perms=a.permissions||[];
+  document.querySelectorAll('#permEditorGrid input').forEach(c=>c.checked=perms.includes(c.value));
+}
+async function savePerms(){
+  const id=document.getElementById('permAdminSelect').value;
+  const al=document.getElementById('permAlert');
+  if(!id){showAlert(al,'error','❌ Chưa chọn tài khoản!');return;}
+  const a=adminList.find(x=>x.id===id);if(!a)return;
+  const perms=[...document.querySelectorAll('#permEditorGrid input:checked')].map(c=>c.value);
+  try {
+    const r = await fetch(`/api/vnmadmin/admins/${id}/permissions`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ permissions: perms })
+    });
+    const d = await r.json();
+    if(r.ok && d.status === 'ok') {
+      addLog('Cap nhat quyen: '+a.username+' → '+perms.join(', '),'ok');
+      showAlert(al,'success','✅ Đã lưu phân quyền cho "'+a.username+'"');
+      await loadAdmins();
+    } else {
+      throw new Error(d.message || 'Lỗi cập nhật phân quyền');
+    }
+  } catch(ex) {
+    showAlert(al,'error','❌ ' + ex.message);
+  }
+}
+function selectAllPerms(){document.querySelectorAll('#permEditorGrid input').forEach(c=>c.checked=true);}
+function clearAllPerms(){document.querySelectorAll('#permEditorGrid input').forEach(c=>c.checked=false);}
+
+// ── SETTINGS
+async function changePassword(){
+  const al=document.getElementById('settingsAlert');
+  const op=document.getElementById('oldPass').value;
+  const np=document.getElementById('newSuperPass').value;
+  if(!op||!np){showAlert(al,'error','❌ Nhập đầy đủ thông tin!');return;}
+  if(np.length<6){showAlert(al,'error','❌ Mật khẩu mới tối thiểu 6 ký tự!');return;}
+  try{
+    const r=await fetch('/api/vnmadmin/change-password',{method:'POST',credentials:'include',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({old_password:op,new_password:np})});
+    const d=await r.json();
+    if(d.status==='ok'){
+      showAlert(al,'success','✅ Đã đổi mật khẩu thành công!');
+      addLog('Doi mat khau super admin','warn');
+      document.getElementById('oldPass').value='';document.getElementById('newSuperPass').value='';
+    } else showAlert(al,'error','❌ '+d.message);
+  }catch(ex){showAlert(al,'error','❌ Lỗi kết nối server!');}
+}
+
+// ── UTILS
+function showAlert(el,type,msg){
+  if(!el)return;el.className='alert '+type+' show';el.textContent=msg;
+  setTimeout(()=>el.classList.remove('show'),4000);
+}
+
+function doLogout(){
+  fetch('/vnmadmin/logout',{credentials:'include'}).finally(()=>window.location.href='/vnmadmin/login');
+}
+
+// ── INIT
+async function initDashboard(){
+  await loadAdmins();
+  updateStats();
+  refreshDashLog();
+  addLog('Super admin "vinamilk" truy cap he thong quan ly CSDL tap trung','warn');
+}
+initDashboard();
+</script>
+</body>
+</html>
+

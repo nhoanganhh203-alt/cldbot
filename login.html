@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>vnmscan — Terminal Access Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg0:#030608;--bg1:#080d12;--bg2:#0b1118;--bg3:#101820;
+  --green:#00ff88;--cyan:#00d2ff;--red:#ff2244;--purple:#9945ff;
+  --t1:#e8f4fd;--t2:#8aa8c0;--t3:#4a6478;--t4:#2a3a48;
+  --gC:0 0 8px #00d2ff,0 0 24px rgba(0,210,255,.35);
+  --gG:0 0 8px #00ff88,0 0 20px rgba(0,255,136,.4);
+  --fH:'Orbitron',monospace;--fM:'Share Tech Mono',monospace;--fU:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--fU);
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,210,255,.014) 2px,rgba(0,210,255,.014) 4px),
+  radial-gradient(ellipse at 50% 50%,rgba(153,69,255,.05) 0%,transparent 70%)}
+
+.login-card{
+  background:rgba(14,22,33,.85);border:1px solid rgba(0,210,255,.2);
+  border-radius:16px;width:100%;max-width:440px;padding:32px 28px;
+  backdrop-filter:blur(16px);box-shadow:0 0 40px rgba(0,210,255,.06);
+  position:relative;z-index:1;animation:fadeIn 0.5s ease-out;
+}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--purple),var(--cyan),var(--green));border-radius:16px 16px 0 0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+
+.hdr{text-align:center;margin-bottom:22px}
+.icon{font-size:32px;margin-bottom:8px;animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.title{font-family:var(--fH);font-size:16px;font-weight:900;letter-spacing:3px;
+  background:linear-gradient(90deg,var(--cyan),var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{font-size:9px;color:var(--t3);letter-spacing:2px;font-family:var(--fM);margin-top:4px}
+
+.tabs{display:flex;gap:4px;background:rgba(8,13,18,.8);padding:4px;border-radius:10px;
+  border:1px solid rgba(0,210,255,.1);margin-bottom:20px}
+.tab-btn{flex:1;padding:9px 4px;border:none;background:transparent;cursor:pointer;border-radius:7px;
+  font-family:var(--fH);font-size:7px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;transition:.2s}
+.tab-btn.active{background:rgba(0,210,255,.12);color:var(--cyan);border:1px solid rgba(0,210,255,.2)}
+.tab-btn:hover:not(.active){color:var(--t2)}
+.tab-pane{display:none}
+.tab-pane.active{display:block;animation:fadeIn .2s ease}
+
+.form-group{margin-bottom:16px}
+.lbl{font-family:var(--fH);font-size:8px;letter-spacing:2px;color:var(--t2);text-transform:uppercase;margin-bottom:6px;display:block}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap .ico{position:absolute;left:12px;font-size:13px;color:var(--t3)}
+.in{width:100%;background:var(--bg3);border:1px solid rgba(0,210,255,.15);border-radius:8px;
+  color:var(--t1);font-family:var(--fM);font-size:14px;padding:10px 12px 10px 36px;outline:none;transition:all .25s}
+.in:focus{border-color:var(--cyan);box-shadow:0 0 12px rgba(0,210,255,.2);background:var(--bg0)}
+
+.otp-in{
+  width:100%;background:var(--bg3);border:1px solid rgba(153,69,255,.35);border-radius:8px;
+  color:var(--t1);font-family:var(--fM);font-size:16px;padding:13px 16px;
+  text-align:center;letter-spacing:3px;outline:none;transition:all .25s;
+}
+.otp-in:focus{border-color:var(--purple);box-shadow:0 0 16px rgba(153,69,255,.3);background:var(--bg0)}
+.otp-in::placeholder{color:var(--t4);letter-spacing:1px;font-size:12px}
+.otp-hint{font-family:var(--fM);font-size:9px;color:var(--t3);text-align:center;margin-top:8px;letter-spacing:1px;line-height:1.6}
+
+.btn-login{width:100%;padding:12px;border:none;border-radius:8px;cursor:pointer;
+  font-family:var(--fH);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  background:linear-gradient(135deg,var(--cyan),var(--green));color:#030608;
+  box-shadow:var(--gC);transition:all .25s;margin-top:8px}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(0,210,255,.5)}
+.btn-login:active,.btn-otp:active{transform:scale(.98)}
+
+.btn-otp{width:100%;padding:12px;border:none;border-radius:8px;cursor:pointer;
+  font-family:var(--fH);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  background:linear-gradient(135deg,var(--purple),var(--cyan));color:#fff;
+  box-shadow:0 0 16px rgba(153,69,255,.3);transition:all .25s;margin-top:8px}
+.btn-otp:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(153,69,255,.5)}
+
+.err-msg{background:rgba(255,34,68,.1);border:1px solid rgba(255,34,68,.3);color:var(--red);
+  font-family:var(--fM);font-size:11px;padding:8px 12px;border-radius:8px;
+  margin-bottom:14px;display:none;animation:shake .35s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+footer{position:absolute;bottom:14px;text-align:center;font-family:var(--fM);font-size:9px;color:var(--t3);letter-spacing:1.5px}
+footer span{color:var(--cyan)}
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="hdr">
+    <div class="icon">🔒</div>
+    <div class="title">vnmscan TERMINAL</div>
+    <div class="sub">AUTHORIZATION REQUIRED</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tabBtnLogin" onclick="switchTab('Login')">🔐 Đăng Nhập</button>
+    <button class="tab-btn" id="tabBtnOtp" onclick="switchTab('Otp')">🔑 Mã Truy Cập 1 Lần</button>
+  </div>
+
+  <div id="errMsg" class="err-msg"></div>
+
+  <!-- TAB ĐĂNG NHẬP -->
+  <div class="tab-pane active" id="paneLogin">
+    <form onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="lbl">Tên Đăng Nhập</label>
+        <div class="input-wrap">
+          <span class="ico">👤</span>
+          <input type="text" class="in" id="user" placeholder="admin" autocomplete="off"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="lbl">Mật Khẩu</label>
+        <div class="input-wrap">
+          <span class="ico">🔑</span>
+          <input type="password" class="in" id="pass" placeholder="••••••••"/>
+        </div>
+      </div>
+      <button type="submit" class="btn-login" id="btnLogin">⚡ Đăng Nhập</button>
+    </form>
+  </div>
+
+  <!-- TAB OTP -->
+  <div class="tab-pane" id="paneOtp">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-family:var(--fM);font-size:9px;color:var(--t3);letter-spacing:1.5px">MÃ TRUY CẬP DO ADMIN CẤP PHÁT</div>
+      <div style="font-family:var(--fM);font-size:8px;color:var(--t4);margin-top:4px">Chỉ dùng được đúng 1 lần — tự động vô hiệu sau khi xác thực</div>
+    </div>
+    <form onsubmit="handleOtpLogin(event)">
+      <div class="form-group">
+        <label class="lbl">Nhập Mã Truy Cập</label>
+        <input type="text" class="otp-in" id="otpInput"
+          placeholder="Nhập mã admin đã cấp cho bạn..."
+          autocomplete="off" spellcheck="false"/>
+        <div class="otp-hint">
+          💡 Nhập chính xác mã được admin cấp — không phân biệt HOA/thường<br/>
+          <span style="color:var(--purple);opacity:.8">Ví dụ: dangnhap &nbsp;|&nbsp; 8NC9-9WVJ &nbsp;|&nbsp; admin2026</span>
+        </div>
+      </div>
+      <button type="submit" class="btn-otp" id="btnOtp">🔑 Xác Thực &amp; Đăng Nhập</button>
+    </form>
+  </div>
+</div>
+
+<footer>VINAMILK NIGHT CLUB &nbsp;|&nbsp; <span>vnmscan v3.2</span></footer>
+
+<script>
+function switchTab(name){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pane'+name).classList.add('active');
+  document.getElementById('tabBtn'+name).classList.add('active');
+  document.getElementById('errMsg').style.display='none';
+}
+
+function showErr(msg){
+  const el=document.getElementById('errMsg');
+  el.textContent=msg; el.style.display='block';
+  el.style.animation='none'; el.offsetHeight; el.style.animation='shake .35s ease';
+}
+
+async function handleLogin(ev){
+  ev.preventDefault();
+  const user=document.getElementById('user').value.trim();
+  const pass=document.getElementById('pass').value;
+  const btn=document.getElementById('btnLogin');
+  if(!user||!pass){showErr('❌ Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu');return;}
+  btn.disabled=true; btn.textContent='⏱ Đang xác thực...';
+  document.getElementById('errMsg').style.display='none';
+  try{
+    const r=await fetch('api/login',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:user,password:pass})});
+    const d=await r.json();
+    if(r.ok&&d.status==='ok'){
+      btn.textContent='✅ Thành công!';
+      btn.style.background='linear-gradient(135deg,var(--green),var(--cyan))';
+      setTimeout(()=>window.location.href='./',700);
+    } else throw new Error(d.message||'Sai thông tin đăng nhập');
+  }catch(ex){
+    btn.disabled=false; btn.textContent='⚡ Đăng Nhập';
+    showErr('❌ '+ex.message);
+  }
+}
+
+async function handleOtpLogin(ev){
+  ev.preventDefault();
+  // Lấy nguyên văn, chỉ trim khoảng trắng đầu/cuối
+  const otp=document.getElementById('otpInput').value.trim();
+  const btn=document.getElementById('btnOtp');
+  if(!otp){showErr('❌ Vui lòng nhập mã truy cập');return;}
+  btn.disabled=true; btn.textContent='⏱ Đang kiểm tra mã...';
+  document.getElementById('errMsg').style.display='none';
+  try{
+    const r=await fetch('api/login',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({otp_code:otp})});
+    const d=await r.json();
+    if(r.ok&&d.status==='ok'){
+      btn.textContent='✅ Hợp lệ — Đang vào hệ thống...';
+      btn.style.background='linear-gradient(135deg,var(--green),var(--cyan))';
+      setTimeout(()=>window.location.href='./',800);
+    } else throw new Error(d.message||'Mã không đúng hoặc đã hết hạn');
+  }catch(ex){
+    btn.disabled=false; btn.textContent='🔑 Xác Thực & Đăng Nhập';
+    showErr('❌ '+ex.message);
+  }
+}
+</script>
+</body>
+</html>
+

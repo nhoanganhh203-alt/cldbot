@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Vinamilk Night Club — AI Cyberpunk Security</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ══════ ROOT ══════════════════════════════════════════ */
+:root{
+  --bg0:#030608;--bg1:#080d12;--bg2:#0b1118;--bg3:#101820;--bghov:#151f2a;--bgcard:#0e1621;
+  --green:#00ff88;--cyan:#00d2ff;--red:#ff2244;--orange:#ff8800;--purple:#9945ff;--yellow:#ffe000;
+  --t1:#e8f4fd;--t2:#8aa8c0;--t3:#4a6478;
+  --bd0:rgba(0,210,255,.12);--bdg:rgba(0,255,136,.35);--bdc:rgba(0,210,255,.4);
+  --gG:0 0 8px #00ff88,0 0 20px rgba(0,255,136,.4);
+  --gC:0 0 8px #00d2ff,0 0 24px rgba(0,210,255,.35);
+  --gR:0 0 8px #ff2244,0 0 20px rgba(255,34,68,.4);
+  --fH:'Orbitron',monospace;--fM:'Share Tech Mono',monospace;--fU:'Inter',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--fU);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,210,255,.014) 2px,rgba(0,210,255,.014) 4px),
+  radial-gradient(ellipse at 20% 50%,rgba(0,210,255,.04) 0%,transparent 60%),
+  radial-gradient(ellipse at 80% 20%,rgba(0,255,136,.03) 0%,transparent 50%)}
+
+/* ══════ HEADER ════════════════════════════════════════ */
+header{position:sticky;top:0;z-index:100;height:56px;padding:0 22px;
+  background:rgba(8,13,18,.96);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--bdc);box-shadow:0 1px 28px rgba(0,210,255,.12);
+  display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:11px}
+.bicon{width:34px;height:34px;background:linear-gradient(135deg,var(--cyan),var(--green));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;
+  box-shadow:var(--gC);animation:iPulse 3s ease-in-out infinite}
+@keyframes iPulse{0%,100%{box-shadow:var(--gC)}50%{box-shadow:0 0 14px #00d2ff,0 0 38px rgba(0,210,255,.5)}}
+.btitle{font-family:var(--fH);font-size:13px;font-weight:700;letter-spacing:3px;
+  background:linear-gradient(90deg,var(--cyan),var(--green));-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text}
+.bsub{font-size:9px;color:var(--t3);letter-spacing:2px;font-family:var(--fM)}
+.hright{display:flex;align-items:center;gap:12px}
+.spill{display:flex;align-items:center;gap:6px;font-family:var(--fM);font-size:10px;
+  color:var(--t2);padding:4px 10px;border:1px solid var(--bd0);border-radius:4px;
+  background:rgba(0,210,255,.04);transition:all .3s}
+.spill.active{border-color:rgba(0,210,255,.5);background:rgba(0,210,255,.1);box-shadow:0 0 10px rgba(0,210,255,.18)}
+.pdot{width:7px;height:7px;border-radius:50%;background:var(--t3);flex-shrink:0;transition:all .3s}
+.pdot.idle{background:var(--t3)}
+.pdot.scan{background:var(--cyan);box-shadow:var(--gC);animation:blink 1.2s ease-in-out infinite}
+.pdot.done{background:var(--green);box-shadow:var(--gG)}
+.pdot.stop{background:var(--red);box-shadow:var(--gR)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ══════ LAYOUT ════════════════════════════════════════ */
+.app{display:grid;grid-template-columns:1fr 288px;gap:14px;padding:14px 18px 28px;
+  min-height:calc(100vh - 56px);position:relative;z-index:1}
+
+/* ══════ CARD ══════════════════════════════════════════ */
+.card{background:var(--bgcard);border:1px solid var(--bd0);border-radius:12px;
+  position:relative;overflow:hidden;margin-bottom:12px;transition:border-color .3s,box-shadow .3s}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.45;transition:all .3s}
+.card.scan-active{border-color:rgba(0,255,136,.38)!important;box-shadow:0 0 28px rgba(0,255,136,.07)}
+.card.scan-active::before{background:linear-gradient(90deg,transparent,var(--green),transparent)!important;opacity:.8!important}
+.ch{display:flex;align-items:center;gap:8px;padding:11px 15px 9px;border-bottom:1px solid var(--bd0)}
+.ct{font-family:var(--fH);font-size:10px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;font-weight:600}
+.cb{padding:14px}
+
+/* ══════ UPLOAD ════════════════════════════════════════ */
+.uzone{border:2px dashed var(--bdc);border-radius:8px;padding:20px 14px;
+  text-align:center;cursor:pointer;transition:all .22s;background:rgba(0,210,255,.02);position:relative}
+.uzone:hover,.uzone.drag{border-color:var(--cyan);background:rgba(0,210,255,.06)}
+.uzone.has{border-color:var(--green);background:rgba(0,255,136,.04)}
+.uzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uicon{font-size:26px;margin-bottom:7px}
+.ulbl{font-family:var(--fH);font-size:10px;letter-spacing:1.5px;color:var(--cyan);display:block;margin-bottom:3px}
+.uhint{font-size:10px;color:var(--t3);font-family:var(--fM)}
+.uinfo{margin-top:7px;font-family:var(--fM);font-size:11px;color:var(--green);display:none}
+.umeta{display:none;gap:8px;margin-top:7px;flex-wrap:wrap}
+.ubadge{background:rgba(0,210,255,.07);border:1px solid var(--bd0);border-radius:4px;
+  padding:2px 7px;font-family:var(--fM);font-size:9px;color:var(--t2)}
+
+/* ══════ CHIPS ═════════════════════════════════════════ */
+.slbl{font-family:var(--fH);font-size:9px;letter-spacing:2px;color:var(--t3);
+  text-transform:uppercase;margin:13px 0 7px;display:flex;align-items:center;gap:5px}
+.slbl::before{content:'';display:inline-block;width:10px;height:1px;background:var(--cyan)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px}
+.chip{padding:5px 13px;border:1px solid var(--bdc);border-radius:20px;font-family:var(--fH);
+  font-size:10px;letter-spacing:1px;color:var(--t2);cursor:pointer;background:transparent;transition:all .2s;user-select:none}
+.chip:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,210,255,.08)}
+.chip.on{border-color:var(--green);color:var(--green);background:rgba(0,255,136,.1);box-shadow:var(--gG)}
+.chip-all{color:var(--orange)!important}.chip-all.on{border-color:var(--orange)!important;background:rgba(255,136,0,.1)!important}
+.crow{display:flex;align-items:center;gap:7px}
+.crow label{font-size:10px;color:var(--t3);font-family:var(--fM);white-space:nowrap}
+.cinput{background:var(--bg3);border:1px solid var(--bd0);border-radius:4px;color:var(--t1);
+  font-family:var(--fM);font-size:13px;padding:5px 9px;outline:none;transition:border-color .2s;width:88px}
+.cinput:focus{border-color:var(--cyan)}
+
+/* ══════ AI & DNS TOGGLE ═══════════════════════════════ */
+.aitoggle{display:flex;align-items:center;gap:9px;margin-top:9px;padding:7px 11px;
+  background:rgba(153,69,255,.07);border:1px solid rgba(153,69,255,.2);border-radius:8px}
+.dnstoggle{display:flex;align-items:center;gap:9px;margin-top:7px;padding:7px 11px;
+  background:rgba(0,210,255,.07);border:1px solid rgba(0,210,255,.2);border-radius:8px}
+.ailbl{font-family:var(--fH);font-size:9px;letter-spacing:1.5px;color:var(--purple)}
+.dnslbl{font-family:var(--fH);font-size:9px;letter-spacing:1.5px;color:var(--cyan)}
+.tgl{position:relative;display:inline-block;width:34px;height:19px;margin-left:auto}
+.tgl input{opacity:0;width:0;height:0}
+.tslider{position:absolute;cursor:pointer;inset:0;background:var(--bg3);border-radius:20px;
+  transition:.3s;border:1px solid rgba(153,69,255,.3)}
+.tslider::before{content:'';position:absolute;height:13px;width:13px;left:2px;bottom:2px;
+  background:var(--t3);border-radius:50%;transition:.3s}
+.ai-tgl-chk:checked+.tslider{background:rgba(153,69,255,.3);border-color:var(--purple)}
+.ai-tgl-chk:checked+.tslider::before{transform:translateX(15px);background:var(--purple);box-shadow:0 0 6px rgba(153,69,255,.7)}
+.dns-tgl-chk:checked+.tslider{background:rgba(0,210,255,.3);border-color:var(--cyan)}
+.dns-tgl-chk:checked+.tslider::before{transform:translateX(15px);background:var(--cyan);box-shadow:0 0 6px rgba(0,210,255,.7)}
+
+/* ══════ CONTROL BUTTONS ═══════════════════════════════ */
+.ctrlrow{display:flex;gap:10px;margin-top:13px}
+
+/* --- START button states --- */
+.btn-start{
+  flex:1;padding:12px 16px;border:none;border-radius:8px;cursor:pointer;
+  font-family:var(--fH);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .25s;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#00b060,#00ff88);color:#001a0e;
+  box-shadow:0 4px 18px rgba(0,255,136,.38);
+}
+.btn-start:hover:not(:disabled):not(.is-scanning){
+  box-shadow:0 4px 32px rgba(0,255,136,.65);transform:translateY(-2px)}
+.btn-start:active:not(:disabled){transform:scale(.97)}
+.btn-start:disabled{
+  background:rgba(0,255,136,.1);color:rgba(0,255,136,.3);
+  box-shadow:none;cursor:not-allowed;transform:none}
+.btn-start.is-scanning{
+  background:rgba(0,20,10,.7)!important;
+  color:rgba(0,255,136,.4)!important;
+  box-shadow:none!important;cursor:not-allowed!important;
+  border:1px solid rgba(0,255,136,.18);transform:none!important}
+
+/* --- Blinking dot inside START --- */
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;
+  display:none;animation:sdBlink .7s ease-in-out infinite}
+.btn-start.is-scanning .sdot{display:inline-block}
+@keyframes sdBlink{0%,100%{opacity:1}50%{opacity:.1}}
+
+/* --- STOP button states --- */
+.btn-stop{
+  flex:1;padding:12px 16px;border:1px solid rgba(255,34,68,.14);border-radius:8px;
+  font-family:var(--fH);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .25s;cursor:not-allowed;
+  /* IDLE: clearly OFF — dark & desaturated */
+  background:rgba(60,0,12,.5);color:rgba(255,34,68,.22);box-shadow:none;
+}
+/* ACTIVE: blazing red pulse */
+.btn-stop.is-active{
+  background:linear-gradient(135deg,#a00018,#ff2244)!important;
+  color:#fff!important;cursor:pointer!important;
+  border-color:#ff2244!important;
+  animation:stopPulse 1s ease-in-out infinite;
+}
+.btn-stop.is-active:hover{
+  box-shadow:0 0 32px #ff2244,0 0 70px rgba(255,34,68,.45)!important;
+  transform:translateY(-2px);animation:none!important}
+.btn-stop.is-stopping{
+  background:rgba(255,136,0,.2)!important;color:var(--orange)!important;
+  border-color:rgba(255,136,0,.4)!important;animation:none!important;cursor:not-allowed!important}
+@keyframes stopPulse{
+  0%  {box-shadow:0 0 6px rgba(255,34,68,.55),0 0 18px rgba(255,34,68,.3)}
+  50% {box-shadow:0 0 20px rgba(255,34,68,.95),0 0 50px rgba(255,34,68,.5),0 0 90px rgba(255,34,68,.18)}
+  100%{box-shadow:0 0 6px rgba(255,34,68,.55),0 0 18px rgba(255,34,68,.3)}
+}
+
+/* ══════ STATS ══════════════════════════════════════════ */
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:13px}
+.sbox{background:var(--bg3);border:1px solid var(--bd0);border-radius:8px;padding:9px;
+  text-align:center;transition:all .3s}
+.sbox.gc{border-color:var(--bdg)}.sbox.cc{border-color:var(--bdc)}
+.sbox.rc{border-color:rgba(255,34,68,.25)}.sbox.oc{border-color:rgba(255,136,0,.25)}
+.sbox.gc.pulse{animation:spulse 2s ease-in-out infinite}
+@keyframes spulse{0%,100%{box-shadow:0 0 5px rgba(0,255,136,.12)}50%{box-shadow:0 0 15px rgba(0,255,136,.38)}}
+.sv{font-family:var(--fH);font-size:17px;font-weight:700;color:var(--cyan);display:block;line-height:1.2}
+.sv.g{color:var(--green);text-shadow:var(--gG)}.sv.r{color:var(--red)}.sv.o{color:var(--orange)}
+.sl{font-family:var(--fM);font-size:8px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-top:2px;display:block}
+
+/* ══════ PROGRESS ══════════════════════════════════════ */
+.pgwrap{margin-top:11px;display:none}
+.pgtop{display:flex;justify-content:space-between;font-family:var(--fM);font-size:10px;color:var(--t3);margin-bottom:4px}
+.pgtrack{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.pgfill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));
+  border-radius:2px;width:0%;transition:width .35s;box-shadow:0 0 6px rgba(0,210,255,.5)}
+
+/* ══════ DOWNLOAD ══════════════════════════════════════ */
+.dlrow{display:flex;gap:7px;margin-top:9px;justify-content:flex-end}
+.btndl{border:none;border-radius:8px;font-family:var(--fH);font-size:9px;letter-spacing:1.5px;
+  padding:7px 13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;color:#fff}
+.btndl.txt{background:linear-gradient(135deg,#1a4a80,#0080ff)}
+.btndl.txt:hover:not(:disabled){box-shadow:0 4px 20px rgba(0,128,255,.45);transform:translateY(-1px)}
+.btndl.jsn{background:linear-gradient(135deg,#2a1060,#9945ff)}
+.btndl.jsn:hover:not(:disabled){box-shadow:0 4px 20px rgba(153,69,255,.45);transform:translateY(-1px)}
+.btndl.csv{background:linear-gradient(135deg,#005c30,#00a850)}
+.btndl.csv:hover:not(:disabled){box-shadow:0 4px 20px rgba(0,168,80,.45);transform:translateY(-1px)}
+.btndl:disabled{opacity:.3;cursor:not-allowed;transform:none}
+
+/* ══════ TERMINAL ══════════════════════════════════════ */
+.terminal{background:var(--bgcard);border:1px solid rgba(0,210,255,.2);border-radius:12px;
+  position:relative;overflow:hidden;margin-bottom:12px;transition:border-color .3s,box-shadow .3s}
+.terminal.scan-active{border-color:rgba(0,255,136,.38)!important;box-shadow:0 0 22px rgba(0,255,136,.07)}
+.terminal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:.55}
+.termhdr{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 13px 8px;border-bottom:1px solid var(--bd0);background:rgba(0,0,0,.3)}
+.termdots{display:flex;gap:5px}
+.tdot{width:9px;height:9px;border-radius:50%}
+.tdot.r{background:#ff5f57}.tdot.y{background:#febc2e}.tdot.g{background:#28c840}
+.termttl{font-family:var(--fH);font-size:9px;letter-spacing:2px;color:var(--green)}
+.btnclear{background:rgba(0,210,255,.07);border:1px solid var(--bd0);color:var(--t3);
+  font-family:var(--fM);font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:4px;cursor:pointer;transition:all .2s}
+.btnclear:hover{border-color:var(--bdc);color:var(--cyan)}
+.termbody{height:330px;overflow-y:auto;padding:9px 11px;font-family:var(--fM);font-size:11px;background:rgba(0,0,0,.42)}
+.termbody::-webkit-scrollbar{width:4px}
+.termbody::-webkit-scrollbar-thumb{background:rgba(0,210,255,.4);border-radius:2px}
+.logline{display:flex;gap:7px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.028);animation:lin .15s ease;line-height:1.5}
+@keyframes lin{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:translateX(0)}}
+.lts{color:var(--t3);flex-shrink:0;font-size:10px;min-width:56px}
+.lic{flex-shrink:0;width:18px;text-align:center}
+.lmsg{flex:1;word-break:break-all}
+.logsep{border-bottom:1px solid rgba(0,210,255,.1);margin:3px 0}
+.scanbar{display:none;align-items:center;gap:8px;padding:6px 13px;background:rgba(0,210,255,.04);border-top:1px solid var(--bd0)}
+.scanpulse{flex:1;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  background-size:200% 100%;animation:smove 1.2s linear infinite}
+@keyframes smove{0%{background-position:-100% 0}100%{background-position:200% 0}}
+
+/* ══════ RESULTS TABLE ═════════════════════════════════ */
+.rcard{background:var(--bgcard);border:1px solid var(--bd0);border-radius:12px;overflow:hidden}
+.rcard::before{content:'';display:block;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.45}
+.rhdr{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--bd0)}
+.rttlg{display:flex;align-items:center;gap:7px}
+.rttl{font-family:var(--fH);font-size:10px;letter-spacing:2px;color:var(--cyan)}
+.cbadge{background:rgba(0,255,136,.12);color:var(--green);font-family:var(--fM);
+  font-size:10px;padding:2px 7px;border-radius:10px;border:1px solid var(--bdg)}
+.btncpall{background:rgba(0,210,255,.08);border:1px solid var(--bdc);color:var(--cyan);
+  font-family:var(--fH);font-size:9px;letter-spacing:1.5px;padding:5px 11px;border-radius:4px;
+  cursor:pointer;transition:all .2s;display:none;align-items:center;gap:5px}
+.btncpall:hover{background:rgba(0,210,255,.16);box-shadow:var(--gC)}
+.rtable{max-height:360px;overflow-y:auto}
+.rtable::-webkit-scrollbar{width:4px}
+.rtable::-webkit-scrollbar-thumb{background:rgba(0,210,255,.38);border-radius:2px}
+.drow{display:grid;grid-template-columns:36px 8px 1fr auto auto 28px;align-items:center;
+  gap:7px;padding:7px 13px;border-bottom:1px solid rgba(0,210,255,.04);transition:background .15s;animation:rin .24s ease}
+@keyframes rin{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.drow:hover{background:var(--bghov)}
+.didx{font-family:var(--fM);font-size:9px;color:var(--t3);text-align:right}
+.ddot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:var(--gG);flex-shrink:0}
+.dname{font-family:var(--fM);font-size:12px;color:var(--t1);word-break:break-all;cursor:pointer}
+.dname:hover{color:var(--cyan)}
+.dtag{font-family:var(--fM);font-size:8px;padding:2px 6px;border-radius:8px;white-space:nowrap;flex-shrink:0}
+.tvn{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.2)}
+.tkw{background:rgba(0,210,255,.1);color:var(--cyan);border:1px solid rgba(0,210,255,.2)}
+.tbo{background:rgba(153,69,255,.1);color:var(--purple);border:1px solid rgba(153,69,255,.2)}
+.rbadge{font-family:var(--fH);font-size:8px;letter-spacing:1px;padding:2px 6px;border-radius:4px;flex-shrink:0;font-weight:700}
+.rCRITICAL{background:rgba(255,34,68,.15);color:#ff2244;border:1px solid rgba(255,34,68,.3)}
+.rHIGH    {background:rgba(255,136,0,.15);color:#ff8800;border:1px solid rgba(255,136,0,.3)}
+.rMEDIUM  {background:rgba(255,224,0,.1);color:#ffe000;border:1px solid rgba(255,224,0,.2)}
+.rLOW     {background:rgba(0,210,255,.1);color:var(--cyan);border:1px solid var(--bdc)}
+.bcprow{background:transparent;border:1px solid transparent;color:var(--t3);
+  font-size:11px;cursor:pointer;padding:3px 6px;border-radius:4px;transition:all .15s}
+.bcprow:hover{border-color:var(--bdc);color:var(--cyan)}
+.bcprow.cp{color:var(--green);border-color:var(--bdg)}
+.detrow{display:none;padding:6px 13px 9px;background:rgba(0,0,0,.22);border-bottom:1px solid rgba(0,210,255,.05)}
+.detrow.open{display:block}
+.aisig{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.aisig span{background:rgba(153,69,255,.08);border:1px solid rgba(153,69,255,.2);border-radius:4px;
+  font-family:var(--fM);font-size:9px;color:var(--purple);padding:2px 6px}
+.aiscorebar{height:5px;border-radius:3px;margin-top:5px;
+  background:linear-gradient(90deg,var(--green),var(--orange),var(--red));position:relative}
+.aiscorethumb{position:absolute;top:-4px;width:3px;height:13px;background:#fff;border-radius:2px;
+  box-shadow:0 0 5px rgba(255,255,255,.5);transition:left .5s}
+.empty{padding:38px 18px;text-align:center}
+.emptyico{font-size:34px;margin-bottom:10px;opacity:.33}
+.emptytxt{font-family:var(--fM);font-size:12px;color:var(--t3);line-height:1.7}
+
+/* ══════ SIDEBAR ═══════════════════════════════════════ */
+.sidebar{display:flex;flex-direction:column;gap:12px}
+/* insight */
+.insw{background:var(--bgcard);border:1px solid rgba(153,69,255,.25);border-radius:12px;overflow:hidden;position:relative}
+.insw::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--purple),transparent);opacity:.7}
+.inshdr{display:flex;align-items:center;justify-content:space-between;padding:10px 13px 9px;border-bottom:1px solid rgba(153,69,255,.15)}
+.aibadge{background:rgba(153,69,255,.2);border:1px solid rgba(153,69,255,.4);border-radius:4px;
+  padding:2px 6px;font-family:var(--fH);font-size:8px;letter-spacing:1.5px;color:var(--purple);
+  animation:gbadge 2.5s ease-in-out infinite}
+@keyframes gbadge{0%,100%{box-shadow:0 0 5px rgba(153,69,255,.3)}50%{box-shadow:0 0 12px rgba(153,69,255,.6)}}
+.btnref{background:rgba(153,69,255,.1);border:1px solid rgba(153,69,255,.3);color:var(--purple);
+  font-family:var(--fH);font-size:8px;letter-spacing:1px;cursor:pointer;padding:4px 8px;
+  border-radius:4px;transition:all .2s;display:flex;align-items:center;gap:4px}
+.btnref:hover{background:rgba(153,69,255,.2)}
+.ricon{display:inline-block;font-size:12px;transition:transform .5s}
+.btnref.spin .ricon{animation:spinOnce .5s ease}
+@keyframes spinOnce{to{transform:rotate(360deg)}}
+.insb{padding:13px}
+.instxt{font-size:12px;color:var(--t1);line-height:1.7;border-left:3px solid var(--purple);padding-left:10px;transition:opacity .3s}
+.instxt.fo{opacity:0}
+/* cat bars */
+.catw{background:var(--bgcard);border:1px solid var(--bd0);border-radius:12px;padding:13px 14px}
+.catwt{font-family:var(--fH);font-size:9px;letter-spacing:2px;color:var(--t3);margin-bottom:11px}
+.catbars{display:flex;flex-direction:column;gap:6px}
+.catitem{display:flex;align-items:center;gap:6px}
+.catlbl{font-family:var(--fM);font-size:9px;color:var(--t2);width:86px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cattrack{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.catfill{height:100%;border-radius:3px;transition:width .8s ease;width:0%}
+.catcnt{font-family:var(--fM);font-size:9px;color:var(--t3);width:22px;text-align:right}
+/* analyze single */
+.anaw{background:var(--bgcard);border:1px solid rgba(0,255,136,.15);border-radius:12px;overflow:hidden}
+.anaw::before{content:'';display:block;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:.5}
+.anab{padding:12px 13px}
+.anat{font-family:var(--fH);font-size:9px;letter-spacing:2px;color:var(--green);margin-bottom:9px}
+.anarow{display:flex;gap:6px}
+.anain{flex:1;background:var(--bg3);border:1px solid var(--bd0);border-radius:4px;
+  color:var(--t1);font-family:var(--fM);font-size:11px;padding:5px 8px;outline:none}
+.anain:focus{border-color:var(--green)}
+.btnana{background:rgba(0,255,136,.15);border:1px solid var(--bdg);color:var(--green);
+  font-family:var(--fH);font-size:8px;letter-spacing:1px;padding:5px 9px;
+  border-radius:4px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.btnana:hover{background:rgba(0,255,136,.25)}
+.anares{margin-top:9px;font-family:var(--fM);font-size:10px;background:var(--bg0);
+  border:1px solid var(--bd0);border-radius:4px;padding:7px;line-height:1.7;display:none;max-height:170px;overflow-y:auto}
+/* help */
+.helpw{background:var(--bgcard);border:1px solid rgba(255,136,0,.18);border-radius:12px;overflow:hidden}
+.helpw::before{content:'';display:block;height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);opacity:.5}
+.helpb{padding:12px 13px}
+.helpt{font-family:var(--fH);font-size:9px;letter-spacing:2px;color:var(--orange);margin-bottom:8px}
+.helpl{list-style:none;display:flex;flex-direction:column;gap:5px}
+.helpl li{font-size:10px;color:var(--t2);display:flex;gap:6px;line-height:1.4}
+.helpl li::before{content:'▸';color:var(--orange);flex-shrink:0}
+/* toast */
+.twrap{position:fixed;top:66px;right:16px;z-index:999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{background:var(--bg2);border-radius:8px;padding:8px 13px;font-family:var(--fM);font-size:11px;
+  border-left:3px solid var(--cyan);color:var(--t1);animation:tin .3s ease;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:auto;max-width:270px}
+.toast.ok{border-color:var(--green);color:var(--green)}.toast.er{border-color:var(--red);color:var(--red)}.toast.wn{border-color:var(--orange);color:var(--orange)}
+@keyframes tin{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+footer{text-align:center;padding:11px;font-family:var(--fM);font-size:9px;color:var(--t3);
+  border-top:1px solid var(--bd0);position:relative;z-index:1;letter-spacing:1.5px}
+footer span{color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="twrap" id="twrap"></div>
+
+<header>
+  <div class="brand">
+    <div class="bicon">🛡️</div>
+    <div>
+      <div class="btitle">Vinamilk Night Club</div>
+      <div class="bsub">AI-Powered Cyberpunk Security Intelligence v3.2</div>
+    </div>
+  </div>
+  <div class="hright">
+    <div class="spill" id="spill">
+      <div class="pdot idle" id="pdot"></div>
+      <span id="stxt">IDLE — AWAITING UPLOAD</span>
+    </div>
+    <div class="spill">⏱ <span id="clock">--:--:--</span></div>
+    <a href="logout" class="spill" style="color:var(--red);border-color:rgba(255,34,68,.3);background:rgba(255,34,68,.05);text-decoration:none;font-weight:bold;cursor:pointer" title="Đăng xuất khỏi hệ thống">🚪 LOGOUT</a>
+  </div>
+</header>
+
+<div class="app">
+<!-- ════ MAIN ════════════════════════════════ -->
+<div>
+
+  <!-- Control Card -->
+  <div class="card" id="ctrlCard">
+    <div class="ch"><span>⚡</span><span class="ct">Control Panel — Upload &amp; Configure</span></div>
+    <div class="cb">
+
+      <!-- Upload zone -->
+      <div class="uzone" id="uzone">
+        <input type="file" id="fileIn" accept=".txt"/>
+        <div class="uicon">📂</div>
+        <span class="ulbl">DROP TXT FILE HERE OR CLICK TO BROWSE</span>
+        <span class="uhint">Hosts / blacklist / plain domain list (.txt)</span>
+        <div class="uinfo" id="uinfo"></div>
+        <div class="umeta" id="umeta">
+          <span class="ubadge" id="ub1">—</span>
+          <span class="ubadge" id="ub2">—</span>
+          <span class="ubadge" id="ub3">—</span>
+        </div>
+      </div>
+
+      <!-- Limit chips -->
+      <div class="slbl">Giới hạn kết quả xuất ra</div>
+      <div class="chips">
+        <div class="chip" data-v="5"   onclick="selChip(this)">TOP 5</div>
+        <div class="chip" data-v="10"  onclick="selChip(this)">TOP 10</div>
+        <div class="chip" data-v="15"  onclick="selChip(this)">TOP 15</div>
+        <div class="chip" data-v="20"  onclick="selChip(this)">TOP 20</div>
+        <div class="chip chip-all" data-v="all" onclick="selChip(this)">⚡ TOÀN BỘ</div>
+      </div>
+      <div class="crow">
+        <label>Tùy chỉnh:</label>
+        <input type="number" class="cinput" id="cusLim" min="1" placeholder="VD: 500" oninput="clrChips()"/>
+      </div>
+
+      <!-- AI toggle -->
+      <div class="aitoggle">
+        <span style="font-size:13px">🤖</span>
+        <span class="ailbl">BẬT PHÂN TÍCH AI THREAT INTELLIGENCE</span>
+        <label class="tgl"><input type="checkbox" id="aiTgl" class="ai-tgl-chk" checked/><span class="tslider"></span></label>
+      </div>
+
+      <!-- DNS toggle -->
+      <div class="dnstoggle">
+        <span style="font-size:13px">🌐</span>
+        <span class="dnslbl">BẬT KIỂM TRA DNS LIVE (RESOLVE IP)</span>
+        <label class="tgl"><input type="checkbox" id="dnsTgl" class="dns-tgl-chk"/><span class="tslider"></span></label>
+      </div>
+
+      <!-- Control buttons -->
+      <div class="ctrlrow">
+        <button class="btn-start" id="btnStart" onclick="startScan()" disabled>
+          <span class="sdot" id="sdot"></span>
+          <span id="startTxt">▶ START SCAN</span>
+        </button>
+        <button class="btn-stop" id="btnStop" onclick="stopScan()">
+          <span id="stopTxt">⏹ EMERGENCY STOP</span>
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="sgrid">
+        <div class="sbox cc"><span class="sv" id="sScanned">0</span><span class="sl">Dòng quét</span></div>
+        <div class="sbox gc" id="boxFound"><span class="sv g" id="sFound">0</span><span class="sl">Domain VN</span></div>
+        <div class="sbox rc"><span class="sv r" id="sNovn">0</span><span class="sl">Loại (non-VN)</span></div>
+        <div class="sbox oc"><span class="sv o" id="sTotal">—</span><span class="sl">Tổng dòng</span></div>
+      </div>
+
+      <!-- Progress -->
+      <div class="pgwrap" id="pgwrap">
+        <div class="pgtop"><span id="pglbl">Đang quét...</span><span id="pgpct">0%</span></div>
+        <div class="pgtrack"><div class="pgfill" id="pgfill"></div></div>
+      </div>
+
+      <!-- Download -->
+      <div class="dlrow">
+        <button class="btndl jsn" id="btnJson" onclick="dl('json')" disabled>📋 JSON</button>
+        <button class="btndl txt" id="btnTxt"  onclick="dl('txt')"  disabled>💾 TẢI .TXT</button>
+        <button class="btndl csv" id="btnCsv"  onclick="dl('csv')"  disabled>📊 XUẤT CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terminal -->
+  <div class="terminal" id="termCard">
+    <div class="termhdr">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="termdots"><div class="tdot r"></div><div class="tdot y"></div><div class="tdot g"></div></div>
+        <span class="termttl">⚡ LIVE PROCESSING LOG</span>
+      </div>
+      <button class="btnclear" onclick="clearLog()">CLEAR</button>
+    </div>
+    <div class="termbody" id="term">
+      <div class="logline"><span class="lts">--:--:--</span><span class="lic">🖥️</span><span class="lmsg" style="color:var(--t3)">Terminal sẵn sàng. Upload file và nhấn START SCAN...</span></div>
+    </div>
+    <div class="scanbar" id="scanbar">
+      <span style="font-family:var(--fM);font-size:9px;color:var(--cyan);flex-shrink:0">⚡ SCANNING</span>
+      <div class="scanpulse"></div>
+      <span style="font-family:var(--fM);font-size:9px;color:var(--t3);flex-shrink:0" id="sinfo">—</span>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="rcard">
+    <div class="rhdr">
+      <div class="rttlg">
+        <span>🎯</span>
+        <span class="rttl">Kết Quả — VN Target Domains</span>
+        <span class="cbadge" id="cbadge">0 domains</span>
+      </div>
+      <button class="btncpall" id="btnCpAll" onclick="copyAll()">📋 Copy All</button>
+    </div>
+    <!-- Filter bar -->
+    <div class="fbar" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px;border-bottom:1px solid var(--bd0);background:rgba(0,0,0,.2)">
+      <input type="text" id="fSearch" class="cinput" placeholder="Tìm kiếm domain..." style="flex:1;min-width:140px;width:auto;font-size:11px;padding:4px 8px" oninput="applyFilters()"/>
+      <select id="fRisk" class="cinput" style="width:auto;font-size:11px;padding:4px 8px;cursor:pointer" onchange="applyFilters()">
+        <option value="ALL">⚠️ RISK: TẤT CẢ</option>
+        <option value="CRITICAL">🔴 CRITICAL</option>
+        <option value="HIGH">🟠 HIGH</option>
+        <option value="MEDIUM">🟡 MEDIUM</option>
+        <option value="LOW">🔵 LOW</option>
+      </select>
+      <select id="fCat" class="cinput" style="width:auto;font-size:11px;padding:4px 8px;cursor:pointer" onchange="applyFilters()">
+        <option value="ALL">📊 PHÂN LOẠI: TẤT CẢ</option>
+        <option value="Banking Fraud">Banking Fraud</option>
+        <option value="Phishing Trap">Phishing Trap</option>
+        <option value="Govt Impersonation">Govt Impersonation</option>
+        <option value="E-Commerce Spoof">E-Commerce Spoof</option>
+        <option value="Social Media Spoof">Social Media Spoof</option>
+        <option value="Telecom Fraud">Telecom Fraud</option>
+        <option value="VN TLD Domain">VN TLD Domain</option>
+        <option value="Crypto Scam">Crypto Scam</option>
+        <option value="Homograph Attack">Homograph Attack</option>
+        <option value="Typosquatting">Typosquatting</option>
+      </select>
+      <select id="fSort" class="cinput" style="width:auto;font-size:11px;padding:4px 8px;cursor:pointer" onchange="applyFilters()">
+        <option value="SCAN_ORDER">⇅ SẮP XẾP: THỨ TỰ QUÉT</option>
+        <option value="SCORE_DESC">⇅ SẮP XẾP: SCORE (GIẢM)</option>
+        <option value="SCORE_ASC">⇅ SẮP XẾP: SCORE (TĂNG)</option>
+        <option value="DOMAIN_ASC">⇅ SẮP XẾP: DOMAIN (A-Z)</option>
+      </select>
+    </div>
+    <div class="rtable" id="rtable">
+      <div class="empty" id="emptyState">
+        <div class="emptyico">🔍</div>
+        <div class="emptytxt">Chưa có kết quả.<br/>Upload file .txt và nhấn START SCAN.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ════ SIDEBAR ════════════════════════════ -->
+<div class="sidebar">
+
+  <!-- AI Insight -->
+  <div class="insw">
+    <div class="inshdr">
+      <div style="display:flex;align-items:center;gap:7px"><span>🤖</span><div class="aibadge">AI INSIGHT</div></div>
+      <button class="btnref" id="btnRef" onclick="refreshInsight()">
+        <span class="ricon" id="ricon">↺</span>LÀM MỚI
+      </button>
+    </div>
+    <div class="insb">
+      <div class="instxt" id="instxt">Đang tải...</div>
+      <div style="margin-top:9px;font-family:var(--fM);font-size:9px;color:var(--t3)" id="insmeta">⚡ SECURITY INTELLIGENCE MODULE</div>
+    </div>
+  </div>
+
+  <!-- Category bars -->
+  <div class="catw">
+    <div class="catwt">📊 Phân Loại Mối Đe Dọa</div>
+    <div class="catbars">
+      <div class="catitem"><span class="catlbl">Banking Fraud</span><div class="cattrack"><div class="catfill" id="cb0" style="background:var(--green)"></div></div><span class="catcnt" id="cc0">0</span></div>
+      <div class="catitem"><span class="catlbl">Phishing Trap</span><div class="cattrack"><div class="catfill" id="cb1" style="background:var(--red)"></div></div><span class="catcnt" id="cc1">0</span></div>
+      <div class="catitem"><span class="catlbl">Govt Spoof</span><div class="cattrack"><div class="catfill" id="cb2" style="background:var(--purple)"></div></div><span class="catcnt" id="cc2">0</span></div>
+      <div class="catitem"><span class="catlbl">E-Commerce</span><div class="cattrack"><div class="catfill" id="cb3" style="background:var(--cyan)"></div></div><span class="catcnt" id="cc3">0</span></div>
+      <div class="catitem"><span class="catlbl">Social/Media</span><div class="cattrack"><div class="catfill" id="cb4" style="background:var(--orange)"></div></div><span class="catcnt" id="cc4">0</span></div>
+      <div class="catitem"><span class="catlbl">VN TLD</span><div class="cattrack"><div class="catfill" id="cb5" style="background:#00ff88"></div></div><span class="catcnt" id="cc5">0</span></div>
+    </div>
+  </div>
+
+  <!-- Single analyze -->
+  <div class="anaw">
+    <div class="anab">
+      <div class="anat">🔬 Phân Tích Domain Đơn Lẻ</div>
+      <div class="anarow">
+        <input type="text" class="anain" id="anain" placeholder="example.com.vn" onkeydown="if(event.key==='Enter')anaSingle()"/>
+        <button class="btnana" onclick="anaSingle()">ANALYZE</button>
+      </div>
+      <div class="anares" id="anares"></div>
+    </div>
+  </div>
+
+  <!-- Help -->
+  <div class="helpw">
+    <div class="helpb">
+      <div class="helpt">📋 Hướng Dẫn</div>
+      <ul class="helpl">
+        <li>Upload file <strong>.txt</strong> bất kỳ format</li>
+        <li>Chọn giới hạn hoặc để trống = toàn bộ</li>
+        <li>Bật AI nhận điểm risk 0-100/domain</li>
+        <li>Xem live log từng dòng đang xử lý</li>
+        <li>Click domain → xem chi tiết AI signals</li>
+        <li>Copy từng domain hoặc Copy All</li>
+        <li>Tải .txt / .json với timestamp</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- /sidebar -->
+</div><!-- /app -->
+
+<footer>Vinamilk Night Club v3.2 &nbsp;|&nbsp; <span>AI Cyberpunk Security Intelligence</span> &nbsp;|&nbsp; <span id="fts"></span></footer>
+
+<script>
+'use strict';
+
+/* ── INSIGHTS ─────────────────────────────────────────── */
+const INSIGHTS=[
+  "Chiến dịch Phishing giả mạo ngân hàng thường sử dụng tên miền typosquatting có ký tự gần giống tên miền thật của các ngân hàng Việt Nam.",
+  "Tên miền có Shannon Entropy cao (trên 3.8) thường là các tên miền được sinh ra bởi thuật toán DGA, chỉ ra hành vi độc hại của mã độc.",
+  "Các trang web giả mạo dịch vụ công thường có đuôi .gov.vn giả hoặc dùng các từ khóa như 'dichvucong', 'vneid' đi kèm với các TLD lạ.",
+  "Mã độc tống tiền (Ransomware) thường sử dụng kênh C2 (Command and Control) dựa trên tên miền ngẫu nhiên nhằm tránh sự phát hiện của IDS/IPS.",
+  "Hãy luôn kiểm tra kỹ chứng chỉ SSL và địa chỉ tên miền trên trình duyệt trước khi nhập bất kỳ thông tin đăng nhập nhạy cảm nào.",
+  "Các cuộc tấn công Homograph sử dụng ký tự unicode từ các bảng chữ cái khác trông giống hệt ký tự Latin để đánh lừa người dùng.",
+  "Tên miền phụ (Subdomain) cấp 3 hoặc cấp 4 thường được tội phạm mạng lạm dụng để bỏ qua các bộ lọc bảo mật dựa trên danh tiếng tên miền gốc.",
+  "Các app tín dụng đen thường sử dụng trang web vay tiền nhanh có vòng đời tên miền cực ngắn để trốn tránh sự quét sạch của cơ quan quản lý.",
+  "Lừa đảo cộng tác viên Shopee, Lazada thường dụ dỗ nạn nhân truy cập vào các trang web 'giật đơn hàng' giả mạo có giao diện giống hệt trang thật.",
+  "Mục tiêu hàng đầu của các trang web Phishing là đánh cắp thông tin tài khoản ngân hàng, mã OTP và thông tin thẻ tín dụng của người dùng.",
+  "Tội phạm mạng thường đăng ký hàng loạt tên miền tương tự thương hiệu lớn ngay trước các sự kiện mua sắm lớn như Black Friday hay Tết.",
+  "Không bao giờ truy cập vào các liên kết lạ được gửi qua SMS từ các đầu số lạ tự xưng là ngân hàng hoặc cơ quan thuế.",
+  "Mật khẩu mạnh kết hợp với xác thực hai lớp (2FA) là lá chắn vững chắc bảo vệ tài khoản của bạn trước các vụ rò rỉ dữ liệu.",
+  "Các trang web cá cược online thường lách luật bằng cách thay đổi địa chỉ IP liên tục thông qua hệ thống phân phối DNS động.",
+  "Hãy sử dụng các máy chủ DNS an toàn như Quad9 (9.9.9.9) hoặc Cloudflare (1.1.1.3) để chặn các truy vấn đến tên miền độc hại từ cấp DNS.",
+  "Hành vi Typosquatting nhắm vào lỗi gõ sai chính tả phổ biến của người dùng để dẫn dụ họ vào các trang web lừa đảo.",
+  "Hệ thống AI Threat Intelligence giúp phân tích hành vi tên miền theo thời gian thực dựa trên các dấu hiệu nghi ngờ như entropy và chiều dài.",
+  "Các trang web lừa đảo trúng thưởng thường yêu cầu nạn nhân đóng trước một khoản phí nhỏ gọi là 'thuế nhận thưởng' hoặc 'phí vận chuyển'.",
+  "Các tên miền lừa đảo thường chứa từ khóa hành động như 'login', 'secure', 'verify', 'update', 'support' để tăng tính thuyết phục.",
+  "Tấn công giả mạo email (Email Spoofing) thường đi kèm với tên miền có đuôi gần giống như tên miền của đối tác doanh nghiệp để lừa tiền.",
+  "Luôn cập nhật hệ điều hành và phần mềm diệt virus lên phiên bản mới nhất để chống lại lỗ hổng zero-day đang bị khai thác rộng rãi.",
+  "Mã độc đào tiền ảo (CryptoJacking) có thể chạy ngầm trên trình duyệt của bạn khi bạn truy cập vào các trang xem phim lậu hoặc tải game crack.",
+  "Tấn công lừa đảo qua mạng xã hội (Social Engineering) khai thác yếu tố tâm lý nhẹ dạ, cả tin của con người thay vì lỗi kỹ thuật.",
+  "Mạng botnet bao gồm hàng ngàn thiết bị IoT bị kiểm soát bởi hacker, thường được dùng để thực hiện các cuộc tấn công DDoS quy mô lớn.",
+  "Không sử dụng chung một mật khẩu cho nhiều tài khoản trực tuyến khác nhau để tránh hiệu ứng domino khi một tài khoản bị rò rỉ.",
+  "Các liên kết rút gọn (như bit.ly, tinyurl) thường được dùng để che giấu địa chỉ đích thực sự của các trang web độc hại.",
+  "Tránh kết nối vào mạng Wi-Fi công cộng không có mật khẩu khi thực hiện các giao dịch chuyển tiền hoặc đăng nhập tài khoản quan trọng.",
+  "Các cuộc gọi lừa đảo deepfake sử dụng AI để giả dạng giọng nói và hình ảnh của người thân nhằm mục đích vay tiền khẩn cấp.",
+  "Hãy cảnh giác với các tệp đính kèm email có đuôi kép nghi ngờ như '.pdf.exe' hoặc '.docx.lnk' - đây thực chất là mã độc ngụy trang.",
+  "Khi phát hiện tên miền nghi ngờ giả mạo doanh nghiệp của bạn, hãy báo cáo ngay cho các cơ quan chức năng hoặc tổ chức bảo mật uy tín.",
+  "Tính năng DNSSEC giúp ngăn chặn các cuộc tấn công nhiễm độc bộ đệm DNS (DNS Cache Poisoning) bằng cách xác thực chữ ký số.",
+  "Trang web giả mạo thường cố gắng bắt chước chính xác giao diện đồ họa, logo và font chữ của các thương hiệu nổi tiếng.",
+  "Không bao giờ chia sẻ mã xác thực OTP cho bất kỳ ai, kể cả những người tự xưng là nhân viên ngân hàng hoặc cơ quan công an.",
+  "Mã độc Spyware thu thập thông tin gõ phím (Keylogger) và chụp ảnh màn hình của bạn để gửi về máy chủ của kẻ tấn công.",
+  "Các trang web tải phần mềm crack thường chèn các tệp 'cracked.exe' chứa mã độc Trojan để biến máy tính của bạn thành máy ma (zombie).",
+  "Tấn côngwatering hole nhắm vào một nhóm người dùng cụ thể bằng cách lây nhiễm mã độc vào trang web mà nhóm đó thường xuyên truy cập.",
+  "Sử dụng trình quản lý mật khẩu (Password Manager) giúp bạn tạo và lưu trữ các mật khẩu ngẫu nhiên có độ phức tạp cao một cách an toàn.",
+  "Nên tắt tính năng tự động kết nối Wi-Fi trên điện thoại để tránh bị tự động dẫn dụ vào các điểm truy cập Wi-Fi độc hại của hacker.",
+  "Khi nhận được thông báo tài khoản bị khóa khẩn cấp, hãy bình tĩnh liên hệ trực tiếp với hotline chính thức của dịch vụ thay vì nhấn link đi kèm.",
+  "Các chiến dịch lừa đảo tại Việt Nam thường nhắm vào nhu cầu tuyển dụng việc làm tại nhà nhẹ nhàng nhưng có thu nhập cao bất thường.",
+  "Công cụ bảo mật tường lửa (Firewall) đóng vai trò như chốt chặn giám sát và lọc lưu lượng mạng ra vào hệ thống theo các quy tắc thiết lập.",
+  "Kỹ thuật SQL Injection khai thác lỗ hổng trong xử lý dữ liệu đầu vào của ứng dụng web để truy cập hoặc phá hủy cơ sở dữ liệu phía sau.",
+  "Sử dụng kết nối VPN khi làm việc từ xa giúp mã hóa toàn bộ dữ liệu truyền tải giữa thiết bị của bạn và mạng nội bộ công ty.",
+  "Mối đe dọa từ nội bộ (Insider Threat) đến từ nhân viên hiện tại hoặc cựu nhân viên có quyền truy cập hợp lệ nhưng có ý đồ phá hoại.",
+  "Hãy thực hiện sao lưu dữ liệu (Backup) định kỳ theo quy tắc 3-2-1 để bảo vệ dữ liệu trước nguy cơ bị mã hóa bởi Ransomware.",
+  "Các trang web giả mạo cơ quan công an thường yêu cầu nạn nhân tải tệp tin .apk chứa mã độc gián điệp để giám sát điện thoại Android.",
+  "Hạn chế chia sẻ thông tin cá nhân quá chi tiết như ngày sinh, số căn cước công dân hoặc địa chỉ nhà lên các mạng xã hội công cộng.",
+  "Kẻ tấn công có thể giả mạo biên lai chuyển tiền thành công để đánh lừa người bán hàng trực tuyến nhằm chiếm đoạt tài sản.",
+  "Các thiết bị USB nhặt được hoặc quà tặng lạ có thể chứa mã độc tự động thực thi (Rubber Ducky) gây nguy hiểm cho máy tính khi cắm vào.",
+  "Tội phạm mạng sử dụng kỹ thuật quảng cáo độc hại (Malvertising) để hiển thị các quảng cáo chứa mã độc trên các trang web uy tín.",
+  "Kiểm tra cổng kết nối và khe cắm thẻ của máy ATM trước khi giao dịch để đề phòng các thiết bị đọc trộm thông tin thẻ (Skimming).",
+  "Tổ chức chống lừa đảo quốc gia thường xuyên công bố danh sách các tên miền độc hại bị chặn để người dân chủ động phòng tránh.",
+  "Cảnh giác với các tin nhắn khẩn cấp từ tài khoản của bạn bè yêu cầu chuyển tiền gấp - tài khoản của họ có thể đã bị chiếm quyền kiểm soát.",
+  "Các hệ thống phát hiện xâm nhập (IDS) phân tích lưu lượng mạng để tìm kiếm các mẫu chữ ký (signature) của các cuộc tấn công đã biết.",
+  "Sử dụng giao thức HTTPS giúp mã hóa đường truyền giữa trình duyệt và máy chủ, ngăn chặn kẻ tấn công nghe lén dữ liệu trên đường truyền.",
+  "Hành vi Homograph Attack có thể vượt qua sự kiểm tra bằng mắt thường của người dùng do sự tương đồng tuyệt đối của các glyph ký tự.",
+  "Hãy cảnh giác khi cài đặt các extension (tiện ích mở rộng) trình duyệt từ nguồn không chính thống vì chúng có thể đọc và sửa đổi dữ liệu web.",
+  "Tội phạm mạng có thể chiếm đoạt sim điện thoại của bạn (Sim Swap) thông qua mạng xã hội để vượt qua phương thức xác thực OTP qua SMS.",
+  "Hãy cấu hình bộ định tuyến Wi-Fi gia đình sử dụng chuẩn mã hóa WPA3 thay vì WPA2 để bảo vệ mạng Wi-Fi trước các cuộc tấn công dò mật khẩu.",
+  "Tấn công Cross-Site Scripting (XSS) chèn các tập lệnh độc hại vào các trang web đáng tin cậy để thực thi trên trình duyệt của nạn nhân.",
+  "Các trang web xem bói trực tuyến hoặc mini-game trúng thưởng trên mạng xã hội thường là bẫy thu thập dữ liệu cá nhân cho mục đích spam.",
+  "Hủy kích hoạt giao thức WPS trên bộ định tuyến Wi-Fi vì đây là một trong những điểm yếu dễ bị khai thác nhất để bẻ khóa mật khẩu Wi-Fi.",
+  "Khi sử dụng máy tính công cộng, hãy luôn sử dụng chế độ ẩn danh và chắc chắn rằng bạn đã đăng xuất hoàn toàn khỏi mọi tài khoản.",
+  "Kiểm tra lịch sử đăng nhập tài khoản thường xuyên để phát hiện các thiết bị hoặc vị trí địa lý lạ đang truy cập trái phép.",
+  "Hacker có thể giả mạo trang đăng nhập Wi-Fi công cộng (Evil Twin) để thu thập thông tin tài khoản mạng xã hội hoặc email của bạn.",
+  "Khi mua sắm trực tuyến, ưu tiên sử dụng thẻ ảo (Virtual Card) có giới hạn hạn mức để thanh toán nhằm bảo vệ thẻ tín dụng chính.",
+  "Các chương trình khuyến mãi tặng quà miễn phí hoặc khảo sát nhận tiền thường dẫn đến các trang web bắt đăng ký dịch vụ thu phí ngầm.",
+  "Cập nhật firmware cho bộ định tuyến Wi-Fi và các thiết bị thông minh (IoT) trong nhà để vá các lỗ hổng bảo mật nghiêm trọng.",
+  "Tránh nhấp vào các thông báo pop-up cảnh báo máy tính của bạn bị nhiễm virus và yêu cầu gọi số điện thoại hỗ trợ giả mạo.",
+  "Phân quyền truy cập tối thiểu (Least Privilege) là nguyên tắc chỉ cấp cho người dùng những quyền hạn vừa đủ để hoàn thành công việc.",
+  "Tấn công Man-in-the-Middle (MitM) xảy ra khi kẻ tấn công đứng giữa chặn và chuyển tiếp giao tiếp giữa hai bên một cách bí mật.",
+  "Các ứng dụng lừa đảo trên kho ứng dụng di động có thể tự động đăng ký các dịch vụ SMS trả phí mà người dùng không hề hay biết.",
+  "Luôn kiểm tra quyền truy cập (permission) của ứng dụng di động khi cài đặt - từ chối các quyền không liên quan như danh bạ hoặc SMS.",
+  "Khi chia sẻ ảnh chụp các giấy tờ cá nhân lên mạng, hãy dùng công cụ làm mờ (blur) các thông tin nhạy cảm như số CCCD hoặc mã QR.",
+  "Hacker có thể sử dụng kỹ thuật IP Spoofing để gửi các gói tin có địa chỉ nguồn giả mạo nhằm che giấu danh tính hoặc thực hiện DDoS.",
+  "Các trang web giả mạo thương hiệu chuyển phát nhanh thường yêu cầu nạn nhân thanh toán một khoản phí giao hàng nhỏ để nhận bưu kiện.",
+  "Sử dụng công cụ quét mã độc trực tuyến (như VirusTotal) để kiểm tra các file tải về hoặc liên kết nghi ngờ trước khi mở chúng.",
+  "Nguyên tắc Zero Trust hướng tới việc không bao giờ tin tưởng, luôn luôn xác thực đối với mọi yêu cầu truy cập hệ thống.",
+  "Tên miền lừa đảo thường cố tình viết sai một ký tự của tên miền thật, ví dụ 'vietcombnak' thay vì 'vietcombank'.",
+  "Tài liệu Office (.docx, .xlsx) chứa các macro độc hại có thể tự động tải và cài đặt mã độc vào máy tính khi người dùng chọn Enable Content.",
+  "Hạn chế sử dụng các phần mềm bẻ khóa (crack) vì chúng thường đi kèm với các phần mềm quảng cáo độc hại hoặc backdoor ngầm.",
+  "Cảnh giác với các thư điện tử chúc mừng trúng giải từ các chương trình mà bạn chưa từng đăng ký tham gia.",
+  "Thường xuyên kiểm tra danh sách các ứng dụng được liên kết với tài khoản Google, Facebook để gỡ bỏ các ứng dụng không còn sử dụng.",
+  "Kẻ lừa đảo có thể giả mạo giọng nói của con cái thông qua công nghệ tổng hợp giọng nói bằng AI để gọi điện xin tiền bố mẹ.",
+  "Cấu hình khóa thẻ ngân hàng trên ứng dụng ngân hàng khi không sử dụng để ngăn chặn nguy cơ bị quẹt thẻ thanh toán trái phép.",
+  "Các trang web cung cấp dịch vụ hack game thường là nguồn phát tán các loại mã độc đánh cắp tài khoản game và thông tin cá nhân.",
+  "Sử dụng các công cụ lọc thư rác (Spam Filter) để giảm thiểu tối đa các email Phishing tiếp cận được hộp thư đến của bạn.",
+  "Luôn xác thực lại thông tin qua một kênh liên lạc khác khi nhận được yêu cầu thay đổi tài khoản nhận thanh toán từ đối tác.",
+  "Các trang web giả mạo ví điện tử thường yêu cầu người dùng nhập cụm từ khôi phục (seed phrase) để chiếm đoạt tài sản tiền điện tử.",
+  "Sử dụng khóa bảo mật vật lý (như YubiKey) là một trong những phương thức bảo mật hai lớp an toàn nhất hiện nay chống lại Phishing.",
+  "Hacker có thể khai thác các thiết bị nhà thông minh (như camera giám sát) có mật khẩu mặc định để xâm nhập vào mạng nội bộ gia đình.",
+  "Kiểm tra kỹ hóa đơn thanh toán điện, nước trực tuyến để tránh thanh toán nhầm vào các trang web thu hộ giả mạo của kẻ lừa đảo.",
+  "Các liên kết lừa đảo thường sử dụng các ký tự unicode nhìn giống chữ thường như chữ 'i' viết hoa thành chữ 'l' thường.",
+  "Cảnh giác với các lời mời đầu tư tài chính trực tuyến cam kết lợi nhuận cao bất thường và không có rủi ro.",
+  "Khi thiết lập mật khẩu, hãy sử dụng các cụm mật khẩu (passphrase) dài bao gồm nhiều từ ngẫu nhiên để tăng độ khó khi bẻ khóa.",
+  "Kẻ tấn công có thể giả dạng nhân viên hỗ trợ kỹ thuật của nhà mạng để yêu cầu khách hàng cung cấp thông tin cá nhân hoặc mã OTP chuyển đổi sim.",
+  "Các chiến dịch Phishing mùa tựu trường thường giả mạo thông báo đóng học phí của nhà trường để lừa đảo phụ huynh học sinh.",
+  "Hãy tắt tính năng định vị (GPS) trên điện thoại khi không sử dụng để bảo vệ quyền riêng tư về vị trí của bạn.",
+  "Khi nghi ngờ máy tính bị nhiễm phần mềm độc hại, hãy ngắt kết nối mạng ngay lập tức để ngăn chặn mã độc gửi dữ liệu ra ngoài.",
+  "Sử dụng các giải pháp bảo mật Endpoint Protection để bảo vệ toàn diện các thiết bị cá nhân của nhân viên khi làm việc từ xa."
+];
+let liIdx=-1;
+function refreshInsight(){
+  const btn=document.getElementById('btnRef');
+  const txt=document.getElementById('instxt');
+  btn.classList.add('spin');txt.classList.add('fo');
+  setTimeout(()=>{
+    let i;do{i=Math.floor(Math.random()*INSIGHTS.length)}while(i===liIdx&&INSIGHTS.length>1);
+    liIdx=i;txt.textContent=INSIGHTS[i];
+    document.getElementById('insmeta').textContent='⚡ UPDATED '+new Date().toLocaleTimeString('vi-VN');
+    txt.classList.remove('fo');btn.classList.remove('spin');
+  },260);
+}
+document.getElementById('instxt').textContent=INSIGHTS[0];liIdx=0;
+
+/* ── CLOCK ────────────────────────────────────────────── */
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleTimeString('vi-VN',{hour12:false});
+  document.getElementById('fts').textContent=n.toLocaleDateString('vi-VN')+' '+n.toLocaleTimeString('vi-VN');
+}
+setInterval(tick,1000);tick();
+
+/* ── UPLOAD ───────────────────────────────────────────── */
+let lines=[], origName='', scanning=false, scanResults=[];
+
+const uzone=document.getElementById('uzone');
+const fileIn=document.getElementById('fileIn');
+uzone.addEventListener('dragover',e=>{e.preventDefault();uzone.classList.add('drag')});
+uzone.addEventListener('dragleave',()=>uzone.classList.remove('drag'));
+uzone.addEventListener('drop',e=>{e.preventDefault();uzone.classList.remove('drag');if(e.dataTransfer.files[0])doUpload(e.dataTransfer.files[0])});
+fileIn.addEventListener('change',()=>{if(fileIn.files[0])doUpload(fileIn.files[0])});
+
+function doUpload(file){
+  const fd=new FormData();fd.append('file',file);
+  setStatus('UPLOADING...','scan');
+  addLog('⚡','Dang tai file: '+file.name,'#00d2ff');
+  fetch('api/upload',{method:'POST',body:fd})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.status!=='ok') throw new Error('Upload error');
+      origName=(d.filename||'domains').replace(/\.txt$/i,'');
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        lines=ev.target.result.split(/\r?\n/);
+        const ui=document.getElementById('uinfo');
+        ui.style.display='block';
+        ui.textContent='📄 '+d.filename+' — '+d.line_count.toLocaleString()+' dòng';
+        const um=document.getElementById('umeta');
+        um.style.display='flex';
+        document.getElementById('ub1').textContent='📝 '+d.line_count.toLocaleString()+' dòng';
+        document.getElementById('ub2').textContent='💬 '+(d.comments||0)+' comment';
+        document.getElementById('ub3').textContent='✅ '+(d.data_lines||d.line_count)+' data';
+        document.getElementById('sTotal').textContent=d.line_count.toLocaleString();
+        uzone.classList.add('has');
+        document.getElementById('btnStart').disabled=false;
+        setStatus('FILE LOADED — READY','idle');
+        addLog('✅','Tai xong: '+d.filename+' | '+d.line_count.toLocaleString()+' dong','#00ff88');
+        toast('✅ Đã tải: '+d.filename+' ('+d.line_count.toLocaleString()+' dòng)','ok');
+      };
+      reader.onerror=()=>{toast('❌ Không đọc được file','er');};
+      reader.readAsText(file,'utf-8');
+    })
+    .catch(e=>{toast('❌ Lỗi upload: '+e.message,'er');setStatus('ERROR','idle');});
+}
+
+/* ── CHIPS ────────────────────────────────────────────── */
+let chipVal=null;
+function selChip(el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  chipVal=el.dataset.v==='all'?null:parseInt(el.dataset.v);
+  document.getElementById('cusLim').value='';
+}
+function clrChips(){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  chipVal=null;
+}
+function getLimit(){
+  const v=document.getElementById('cusLim').value.trim();
+  return(v&&parseInt(v)>0)?parseInt(v):chipVal;
+}
+
+/* ── SCAN STATE VISUAL ────────────────────────────────── */
+function setScanUI(on){
+  const bs=document.getElementById('btnStart');
+  const be=document.getElementById('btnStop');
+  const cc=document.getElementById('ctrlCard');
+  const tc=document.getElementById('termCard');
+  const bf=document.getElementById('boxFound');
+  const sp=document.getElementById('spill');
+  if(on){
+    bs.classList.add('is-scanning');
+    bs.disabled=false;
+    document.getElementById('startTxt').textContent='⟳ ĐANG QUÉT...';
+    be.classList.add('is-active');
+    be.classList.remove('is-stopping');
+    document.getElementById('stopTxt').textContent='⏹ DỪNG KHẨN CẤP';
+    cc.classList.add('scan-active');
+    tc.classList.add('scan-active');
+    bf.classList.add('pulse');
+    sp.classList.add('active');
+    document.getElementById('scanbar').style.display='flex';
+    document.getElementById('pgwrap').style.display='block';
+  } else {
+    bs.classList.remove('is-scanning');
+    bs.disabled=!lines.length;
+    document.getElementById('startTxt').textContent='▶ START SCAN';
+    be.classList.remove('is-active');
+    be.classList.remove('is-stopping');
+    be.style.opacity='';
+    document.getElementById('stopTxt').textContent='⏹ EMERGENCY STOP';
+    cc.classList.remove('scan-active');
+    tc.classList.remove('scan-active');
+    bf.classList.remove('pulse');
+    sp.classList.remove('active');
+    document.getElementById('scanbar').style.display='none';
+  }
+}
+
+/* ── CATEGORY TRACKING ────────────────────────────────── */
+const CAT_IDX={
+  'Banking Fraud':0,'E-Commerce Spoof':3,'Social Media Spoof':4,
+  'Govt Impersonation':2,'Telecom Fraud':4,'Phishing Trap':1,
+  'VN Geography Lure':5,'Crypto Scam':1,'News Media Spoof':4,
+  'VN TLD Domain':5,'Homograph Attack':1,'Typosquatting':1,'Unknown Threat':1,
+};
+const catC=[0,0,0,0,0,0];
+function updCats(){
+  const mx=Math.max(...catC,1);
+  catC.forEach((v,i)=>{
+    document.getElementById('cb'+i).style.width=(v/mx*100)+'%';
+    document.getElementById('cc'+i).textContent=v;
+  });
+}
+
+/* ── START SCAN ───────────────────────────────────────── */
+function startScan(){
+  if(!lines.length){toast('⚠️ Chưa upload file!','wn');return;}
+  if(scanning){return;}
+  scanning=true;
+
+  // Reset các bộ lọc về mặc định
+  document.getElementById('fSearch').value = '';
+  document.getElementById('fRisk').value = 'ALL';
+  document.getElementById('fCat').value = 'ALL';
+  document.getElementById('fSort').value = 'SCAN_ORDER';
+
+  // Reset kết quả
+  let dc=0;
+  scanResults = [];
+  catC.fill(0);
+  document.getElementById('rtable').innerHTML='<div class="empty" id="emptyState"><div class="emptyico">⏳</div><div class="emptytxt">Đang quét...</div></div>';
+  document.getElementById('cbadge').textContent='0 domains';
+  document.getElementById('btnCpAll').style.display='none';
+  document.getElementById('sScanned').textContent='0';
+  document.getElementById('sFound').textContent='0';
+  document.getElementById('sNovn').textContent='0';
+  document.getElementById('pgfill').style.width='0%';
+  document.getElementById('pgpct').textContent='0%';
+  document.getElementById('btnJson').disabled=true;
+  document.getElementById('btnTxt').disabled=true;
+  document.getElementById('btnCsv').disabled=true;
+  updCats();
+  setScanUI(true);
+  setStatus('SCANNING','scan');
+  logSep();
+  addLog('🚀','START SCAN — '+lines.length.toLocaleString()+' dong | Limit: '+(getLimit()||'ALL')+' | AI: '+(document.getElementById('aiTgl').checked?'ON':'OFF') + ' | DNS: '+(document.getElementById('dnsTgl').checked?'ON':'OFF'),'#00ff88');
+
+  fetch('api/scan-stream',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      lines:lines, 
+      limit:getLimit(), 
+      enable_ai:document.getElementById('aiTgl').checked,
+      enable_dns:document.getElementById('dnsTgl').checked
+    }),
+  })
+  .then(resp=>{
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const reader=resp.body.getReader();
+    const dec=new TextDecoder('utf-8');
+    let buf='';
+    function pump(){
+      reader.read().then(({done,value})=>{
+        if(done){if(scanning)finishScan(false);return;}
+        buf+=dec.decode(value,{stream:true});
+        const parts=buf.split('\n\n');
+        buf=parts.pop();
+        for(const p of parts){
+          if(p.startsWith('data: ')){
+            try{
+              const ev=JSON.parse(p.slice(6));
+              handleEv(ev, ()=>dc, (v)=>{dc=v;});
+            }catch(_){}
+          }
+        }
+        pump();
+      }).catch(e=>{addLog('❌','Stream error: '+e.message,'#ff2244');finishScan(true);});
+    }
+    pump();
+  })
+  .catch(e=>{
+    addLog('❌','Fetch error: '+e.message,'#ff2244');
+    toast('❌ Lỗi kết nối: '+e.message,'er');
+    scanning=false;setScanUI(false);setStatus('ERROR','idle');
+  });
+
+  function handleEv(d, getDc, setDc){
+    if(d.type==='log'){
+      addLog(d.icon||'·', d.msg||'', d.color||'#8aa8c0');
+
+    } else if(d.type==='domain'){
+      setDc(getDc()+1);
+      const dc2=getDc();
+      d.index = dc2; // Đánh index thứ tự quét
+      scanResults.push(d);
+      
+      document.getElementById('sScanned').textContent=(d.scanned||0).toLocaleString();
+      document.getElementById('sFound').textContent=dc2.toLocaleString();
+      
+      // Lọc tức thời
+      const query = document.getElementById('fSearch').value.toLowerCase().trim();
+      const risk = document.getElementById('fRisk').value;
+      const cat = document.getElementById('fCat').value;
+      
+      const matchSearch = d.domain.toLowerCase().includes(query);
+      const matchRisk = risk === 'ALL' || d.risk === risk;
+      const matchCat = cat === 'ALL' || d.primary_category === cat;
+      
+      if (matchSearch && matchRisk && matchCat) {
+        if(dc2===1 || document.getElementById('emptyState')){
+          document.getElementById('rtable').innerHTML='';
+          document.getElementById('btnCpAll').style.display='flex';
+        }
+        const curRows = document.querySelectorAll('.rtable .drow').length;
+        renderDrow(d, curRows + 1, document.getElementById('rtable'));
+        const rows = document.querySelectorAll('.rtable .drow');
+        if (rows.length > 0) {
+          rows[rows.length - 1].scrollIntoView({behavior:'smooth',block:'nearest'});
+        }
+      }
+      
+      const activeRows = document.querySelectorAll('.rtable .drow').length;
+      document.getElementById('cbadge').textContent = activeRows + ' / ' + dc2 + ' domains';
+
+      if(d.skipped_novn!=null) document.getElementById('sNovn').textContent=(d.skipped_novn||0).toLocaleString();
+      document.getElementById('sinfo').textContent=(d.scanned||0).toLocaleString()+'/'+(d.total||'?').toLocaleString();
+      if(d.total){
+        const p=Math.round(d.scanned/d.total*100);
+        document.getElementById('pgfill').style.width=p+'%';
+        document.getElementById('pgpct').textContent=p+'%';
+      }
+      const ci=CAT_IDX[d.primary_category];
+      if(ci!=null) catC[ci]++;
+      updCats();
+
+    } else if(d.type==='progress'){
+      document.getElementById('sScanned').textContent=(d.scanned||0).toLocaleString();
+      if(d.skipped_novn!=null) document.getElementById('sNovn').textContent=(d.skipped_novn||0).toLocaleString();
+      document.getElementById('sinfo').textContent=(d.scanned||0).toLocaleString()+'/'+(d.total||'?').toLocaleString();
+      if(d.total){
+        const p=Math.round(d.scanned/d.total*100);
+        document.getElementById('pgfill').style.width=p+'%';
+        document.getElementById('pgpct').textContent=p+'%';
+      }
+
+    } else if(d.type==='done'){
+      addLog('🏁', d.message||'HOAN TAT', '#00ff88');
+      logSep();
+      finishScan(false, getDc());
+      toast('✅ '+d.message,'ok');
+
+    } else if(d.type==='stopped'){
+      addLog('⏹', d.message||'STOPPED', '#ff8800');
+      logSep();
+      finishScan(true, getDc());
+    }
+  }
+}
+
+function finishScan(stopped, dc){
+  scanning=false;
+  setScanUI(false);
+  const fill=document.getElementById('pgfill');
+  fill.style.width='100%';
+  fill.style.background=stopped
+    ?'linear-gradient(90deg,var(--orange),#ff8800)'
+    :'linear-gradient(90deg,var(--cyan),var(--green))';
+  document.getElementById('pgpct').textContent=stopped?'STOPPED':'100%';
+  const hasDomains=(dc>0);
+  document.getElementById('btnTxt').disabled=!hasDomains;
+  document.getElementById('btnJson').disabled=!hasDomains;
+  document.getElementById('btnCsv').disabled=!hasDomains;
+  setStatus(stopped?'⏹ STOPPED':'✅ SCAN COMPLETE', stopped?'stop':'done');
+  if(!hasDomains){
+    document.getElementById('rtable').innerHTML=
+      '<div class="empty" id="emptyState"><div class="emptyico">🔍</div>'+
+      '<div class="emptytxt">Không tìm thấy domain nào nhắm vào Việt Nam.<br/>'+
+      '<span style="color:var(--orange)">Xem live log để biết lý do từng dòng bị bỏ qua.</span></div></div>';
+  }
+}
+
+function stopScan(){
+  if(!scanning) return;
+  fetch('api/stop',{method:'POST'});
+  scanning=false;
+  const be=document.getElementById('btnStop');
+  be.classList.remove('is-active');
+  be.classList.add('is-stopping');
+  be.style.opacity='0.7';
+  document.getElementById('stopTxt').textContent='⏳ ĐANG DỪNG...';
+  setStatus('STOPPING...','stop');
+  addLog('⏹','Yeu cau dung khan cap...','#ff8800');
+}
+
+/* ── INTERACTIVE FILTERS ──────────────────────────────── */
+function applyFilters() {
+  const query = document.getElementById('fSearch').value.toLowerCase().trim();
+  const risk = document.getElementById('fRisk').value;
+  const cat = document.getElementById('fCat').value;
+  const sort = document.getElementById('fSort').value;
+
+  // Lọc
+  let filtered = scanResults.filter(d => {
+    const matchSearch = d.domain.toLowerCase().includes(query);
+    const matchRisk = risk === 'ALL' || d.risk === risk;
+    const matchCat = cat === 'ALL' || d.primary_category === cat;
+    return matchSearch && matchRisk && matchCat;
+  });
+
+  // Sắp xếp
+  if (sort === 'SCORE_DESC') {
+    filtered.sort((a, b) => b.score - a.score);
+  } else if (sort === 'SCORE_ASC') {
+    filtered.sort((a, b) => a.score - b.score);
+  } else if (sort === 'DOMAIN_ASC') {
+    filtered.sort((a, b) => a.domain.localeCompare(b.domain));
+  } else {
+    // Thứ tự quét
+    filtered.sort((a, b) => a.index - b.index);
+  }
+
+  // Vẽ lại bảng kết quả
+  const tbl = document.getElementById('rtable');
+  tbl.innerHTML = '';
+
+  if (filtered.length === 0) {
+    tbl.innerHTML = `<div class="empty" id="emptyState">
+      <div class="emptyico">🔍</div>
+      <div class="emptytxt">Không tìm thấy kết quả phù hợp với bộ lọc.</div>
+    </div>`;
+    document.getElementById('cbadge').textContent = '0 / ' + scanResults.length + ' domains';
+    document.getElementById('btnCpAll').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('cbadge').textContent = filtered.length + ' / ' + scanResults.length + ' domains';
+  document.getElementById('btnCpAll').style.display = 'flex';
+
+  filtered.forEach((d, i) => {
+    renderDrow(d, i + 1, tbl);
+  });
+}
+
+/* ── DOWNLOAD ─────────────────────────────────────────── */
+function dl(fmt){window.location.href='api/download?fmt='+fmt;toast('💾 Đang tải xuống...','ok');}
+ 
+/* ── SINGLE ANALYZE ───────────────────────────────────── */
+async function anaSingle(){
+  const d=document.getElementById('anain').value.trim();
+  if(!d){toast('Nhập domain vào ô!','wn');return;}
+  const box=document.getElementById('anares');
+  box.style.display='block';box.innerHTML='<span style="color:var(--t3)">Đang phân tích...</span>';
+  try{
+    const r=await fetch('api/analyze?domain='+encodeURIComponent(d));
+    const data=await r.json();
+    if(data.error){box.innerHTML='<span style="color:var(--red)">'+esc(data.error)+'</span>';return;}
+    box.innerHTML=
+      '<span style="color:'+data.risk_color+';font-weight:700">Risk: '+data.risk+' | Score: '+data.score+'/100</span><br/>'+
+      '<span style="color:var(--cyan)">VN Target: '+(data.is_vn_target?'✅ CÓ':'❌ KHÔNG')+'</span><br/>'+
+      '<span style="color:var(--green)">Category: '+esc(data.primary_category)+'</span><br/>'+
+      '<span style="color:var(--t3)">Keywords: '+esc((data.matched_keywords||[]).join(', ')||'—')+'</span><br/>'+
+      '<span style="color:var(--purple)">Signals:</span><br/>'+
+      (data.signals||[]).map(s=>'<span style="color:var(--t2)">  • '+esc(s)+'</span>').join('<br/>')||'—';
+  }catch(e){box.innerHTML='<span style="color:var(--red)">Lỗi: '+esc(e.message)+'</span>';}
+}
+
+/* ── ADD DOMAIN ROW ───────────────────────────────────── */
+function renderDrow(d, displayIdx, tbl){
+  const vntld=(d.all_categories||[]).includes('VN TLD Domain');
+  const haskw=(d.matched_keywords||[]).length>0;
+  const tag=vntld&&haskw?'<span class="dtag tbo">.VN+KW</span>'
+            :vntld?'<span class="dtag tvn">.VN</span>'
+            :'<span class="dtag tkw">VN KW</span>';
+            
+  let dnsTag = '';
+  if (d.dns_active !== undefined) {
+    dnsTag = d.dns_active 
+      ? '<span class="dtag tvn" style="background:rgba(0,255,136,.1);color:var(--green);border-color:rgba(0,255,136,.3)" title="Domain resolve thành công">ACTIVE</span>'
+      : '<span class="dtag" style="background:rgba(255,34,68,.1);color:var(--red);border:1px solid rgba(255,34,68,.3);font-size:8px;padding:2px 6px;border-radius:8px;white-space:nowrap" title="Không resolve được IP">INACTIVE</span>';
+  }
+
+  const sc=d.score||0;
+  const row=document.createElement('div');
+  row.className='drow';
+  row.innerHTML=
+    '<span class="didx">'+String(displayIdx).padStart(3,'0')+'</span>'+
+    '<span class="ddot" style="background:' + (d.dns_active ? 'var(--green)' : 'var(--t3)') + '"></span>'+
+    '<span class="dname" title="Click để mở rộng AI detail">'+esc(d.domain)+'</span>'+
+    tag + dnsTag +
+    '<span class="rbadge r'+(d.risk||'LOW')+'" title="'+(d.primary_category||'')+'">'+
+      (d.risk||'?')+' '+sc+'</span>'+
+    '<button class="bcprow" onclick="cprow(this,\''+esc(d.domain)+'\')" title="Copy">⎘</button>';
+  tbl.appendChild(row);
+
+  // Detail row
+  if((d.signals||[]).length || (d.ips||[]).length){
+    const det=document.createElement('div');
+    det.className='detrow';
+    det.id='dd'+d.index;
+    const sigs=(d.signals||[]).map(s=>'<span>'+esc(s)+'</span>').join('');
+    const kws=(d.matched_keywords||[]).join(', ')||'—';
+    const ips=(d.ips||[]).join(', ')||'—';
+    det.innerHTML=
+      '<div style="font-family:var(--fM);font-size:9px;color:var(--t3);margin-bottom:4px">'+
+      '🤖 Score: <span style="color:'+(d.risk_color||'#888')+';font-weight:700">'+sc+'/100</span>'+
+      ' &nbsp;|&nbsp; '+esc(d.primary_category||'?')+
+      ' &nbsp;|&nbsp; Entropy: '+(d.entropy||0)+
+      ' &nbsp;|&nbsp; KW: <span style="color:var(--green)">'+esc(kws)+'</span></div>'+
+      '<div style="font-family:var(--fM);font-size:9px;color:var(--t2);margin-bottom:4px">🌐 IPs: <span style="color:var(--cyan)">'+esc(ips)+'</span></div>'+
+      '<div class="aiscorebar"><div class="aiscorethumb" style="left:'+Math.max(0,sc-1)+'%"></div></div>'+
+      '<div class="aisig" style="margin-top:5px">'+sigs+'</div>';
+    tbl.appendChild(det);
+
+    row.querySelector('.dname').addEventListener('click',()=>{
+      det.classList.toggle('open');
+    });
+  } else {
+    row.querySelector('.dname').addEventListener('click',()=>{
+      cpTxt(d.domain);toast('📋 Copied: '+d.domain,'ok');
+    });
+  }
+}
+
+/* ── TERMINAL LOG ─────────────────────────────────────── */
+const MAXLOG=500;
+function addLog(icon,msg,color){
+  const t=document.getElementById('term');
+  const ts=new Date().toLocaleTimeString('vi-VN',{hour12:false});
+  const div=document.createElement('div');
+  div.className='logline';
+  div.innerHTML='<span class="lts">'+ts+'</span><span class="lic">'+icon+'</span>'+
+    '<span class="lmsg" style="color:'+color+'">'+esc(msg)+'</span>';
+  t.appendChild(div);
+  while(t.children.length>MAXLOG) t.removeChild(t.firstChild);
+  t.scrollTop=t.scrollHeight;
+}
+function logSep(){
+  const t=document.getElementById('term');
+  const s=document.createElement('div');s.className='logsep';t.appendChild(s);t.scrollTop=t.scrollHeight;
+}
+function clearLog(){
+  document.getElementById('term').innerHTML='';
+  addLog('🗑️','Log cleared.','#4a6478');
+}
+
+/* ── COPY ─────────────────────────────────────────────── */
+function cprow(btn,d){cpTxt(d);btn.textContent='✓';btn.classList.add('cp');setTimeout(()=>{btn.textContent='⎘';btn.classList.remove('cp')},1400);}
+async function copyAll(){
+  const names=[...document.querySelectorAll('.dname')].map(e=>e.textContent).join('\n');
+  await cpTxt(names);
+  const btn=document.getElementById('btnCpAll');
+  btn.textContent='✅ Copied!';
+  setTimeout(()=>{btn.innerHTML='📋 Copy All';},2000);
+  const cnt=document.querySelectorAll('.dname').length;
+  toast('📋 Đã copy '+cnt+' domains','ok');
+}
+async function cpTxt(t){
+  try{await navigator.clipboard.writeText(t);}catch{
+    const ta=Object.assign(document.createElement('textarea'),{value:t,style:'position:fixed;opacity:0'});
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  }
+}
+
+/* ── DOWNLOAD ─────────────────────────────────────────── */
+function dl(fmt){window.location.href='/api/download?fmt='+fmt;toast('💾 Đang tải xuống...','ok');}
+
+/* ── SINGLE ANALYZE ───────────────────────────────────── */
+async function anaSingle(){
+  const d=document.getElementById('anain').value.trim();
+  if(!d){toast('Nhập domain vào ô!','wn');return;}
+  const box=document.getElementById('anares');
+  box.style.display='block';box.innerHTML='<span style="color:var(--t3)">Đang phân tích...</span>';
+  try{
+    const r=await fetch('/api/analyze?domain='+encodeURIComponent(d));
+    const data=await r.json();
+    if(data.error){box.innerHTML='<span style="color:var(--red)">'+esc(data.error)+'</span>';return;}
+    box.innerHTML=
+      '<span style="color:'+data.risk_color+';font-weight:700">Risk: '+data.risk+' | Score: '+data.score+'/100</span><br/>'+
+      '<span style="color:var(--cyan)">VN Target: '+(data.is_vn_target?'✅ CÓ':'❌ KHÔNG')+'</span><br/>'+
+      '<span style="color:var(--green)">Category: '+esc(data.primary_category)+'</span><br/>'+
+      '<span style="color:var(--t3)">Keywords: '+esc((data.matched_keywords||[]).join(', ')||'—')+'</span><br/>'+
+      '<span style="color:var(--purple)">Signals:</span><br/>'+
+      (data.signals||[]).map(s=>'<span style="color:var(--t2)">  • '+esc(s)+'</span>').join('<br/>')||'—';
+  }catch(e){box.innerHTML='<span style="color:var(--red)">Lỗi: '+esc(e.message)+'</span>';}
+}
+
+/* ── HELPERS ──────────────────────────────────────────── */
+function setStatus(txt,mode){
+  document.getElementById('stxt').textContent=txt;
+  document.getElementById('pdot').className='pdot '+mode;
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function toast(msg,type){
+  const w=document.getElementById('twrap');
+  const t=document.createElement('div');
+  t.className='toast '+(type||'');t.textContent=msg;w.appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .3s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},3400);
+}
+</script>
+</body>
+</html>
